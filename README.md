@@ -64,4 +64,4 @@ Access via http://localhost:8000/settings or press `S`
 
 ---
 
-Built by Giorgio G. Lelmi, 11.C
+Built by Giorgio G. Lelmi
