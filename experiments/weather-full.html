@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="et">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tehnikagümnaasium - Uudised</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            transition: background 3s ease;
+        }
+
+        /* Weather-based backgrounds */
+        body.clear {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+        }
+        body.cloudy {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+        }
+        body.rain {
+            background: linear-gradient(135deg, #1c2833 0%, #2e4053 100%);
+        }
+        body.snow {
+            background: linear-gradient(135deg, #2c3e50 0%, #4a6572 100%);
+        }
+        body.storm {
+            background: linear-gradient(135deg, #17202a 0%, #1c2833 100%);
+        }
+        body.fog {
+            background: linear-gradient(135deg, #4a4a4a 0%, #6b6b6b 100%);
+        }
+
+        /* Subtle weather overlays */
+        .weather-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        /* Snow particles */
+        .snow-particle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(100vh); }
+        }
+
+        /* Rain particles */
+        .rain-particle {
+            position: absolute;
+            width: 1px;
+            height: 15px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.4));
+            animation: rain linear infinite;
+        }
+
+        @keyframes rain {
+            to { transform: translateY(100vh); }
+        }
+
+        /* Storm flicker */
+        body.storm .weather-overlay {
+            animation: flicker 8s infinite;
+        }
+
+        @keyframes flicker {
+            0%, 100% { opacity: 0; }
+            92% { opacity: 0; }
+            93% { opacity: 0.1; }
+            94% { opacity: 0; }
+            96% { opacity: 0.05; }
+            97% { opacity: 0; }
+        }
+
+        .container {
+            position: relative;
+            z-index: 1;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            padding: 40px;
+        }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        h1 { font-size: 2.5rem; font-weight: 300; }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .weather-info {
+            font-size: 1.2rem;
+            opacity: 0.7;
+        }
+
+        .counter {
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        .slide {
+            flex: 1;
+            display: flex;
+            gap: 40px;
+            min-height: 0;
+        }
+
+        .slide-image {
+            flex: 1;
+            border-radius: 20px;
+            overflow: hidden;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .slide-image img {
+            max-width: 100%;
+            max-height: 100%;
+            object-fit: contain;
+        }
+
+        .slide-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .slide-title {
+            font-size: 3rem;
+            font-weight: 600;
+            line-height: 1.2;
+        }
+
+        .progress {
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            margin-top: 30px;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+
+        .progress .bar {
+            height: 100%;
+            background: #3b82f6;
+            width: 0%;
+        }
+
+        .dots {
+            display: flex;
+            gap: 8px;
+            margin-top: 30px;
+        }
+
+        .dots span {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .dots span.active { background: #3b82f6; }
+
+        .loading {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+<body class="clear">
+    <div class="weather-overlay" id="weatherOverlay"></div>
+
+    <div class="container">
+        <header>
+            <h1>Tallinna Tehnikagümnaasium</h1>
+            <div class="header-right">
+                <div class="weather-info" id="weatherInfo"></div>
+                <div class="counter" id="counter"></div>
+            </div>
+        </header>
+
+        <div class="slide" id="slide">
+            <div class="loading">Uudiseid laetakse...</div>
+        </div>
+
+        <div class="progress">
+            <div class="bar" id="bar"></div>
+        </div>
+    </div>
+
+    <script>
+        const SLIDE_TIME = 20000;
+        const REFRESH_TIME = 15 * 60 * 1000;
+        const WEATHER_REFRESH = 5 * 60 * 1000;
+
+        let articles = [];
+        let current = 0;
+
+        async function fetchArticles() {
+            try {
+                const res = await fetch('/api/articles');
+                articles = await res.json();
+                console.log(`Loaded ${articles.length} articles`);
+                if (articles.length) render();
+            } catch (e) {
+                console.error('Fetch error:', e);
+            }
+        }
+
+        async function fetchWeather() {
+            try {
+                const res = await fetch('/api/weather');
+                const data = await res.json();
+                applyWeather(data);
+            } catch (e) {
+                console.error('Weather error:', e);
+            }
+        }
+
+        const weatherIcons = {
+            clear: '☀️',
+            cloudy: '☁️',
+            rain: '🌧️',
+            snow: '❄️',
+            storm: '⛈️',
+            fog: '🌫️'
+        };
+
+        const weatherLabels = {
+            clear: 'Selge',
+            cloudy: 'Pilves',
+            rain: 'Vihm',
+            snow: 'Lumi',
+            storm: 'Torm',
+            fog: 'Udu'
+        };
+
+        function applyWeather(data) {
+            const body = document.body;
+            const overlay = document.getElementById('weatherOverlay');
+            const info = document.getElementById('weatherInfo');
+
+            // Remove old classes
+            body.className = data.condition;
+
+            // Show icon + temp + condition
+            const icon = weatherIcons[data.condition] || '🌡️';
+            const label = weatherLabels[data.condition] || '';
+            info.textContent = `${icon} ${data.temp}°C ${label}`;
+
+            // Clear old particles
+            overlay.innerHTML = '';
+
+            // Add subtle particles for snow/rain
+            if (data.condition === 'snow') {
+                for (let i = 0; i < 30; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'snow-particle';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.animationDuration = (8 + Math.random() * 8) + 's';
+                    p.style.animationDelay = Math.random() * 10 + 's';
+                    overlay.appendChild(p);
+                }
+            } else if (data.condition === 'rain') {
+                for (let i = 0; i < 40; i++) {
+                    const p = document.createElement('div');
+                    p.className = 'rain-particle';
+                    p.style.left = Math.random() * 100 + '%';
+                    p.style.animationDuration = (1 + Math.random() * 1) + 's';
+                    p.style.animationDelay = Math.random() * 2 + 's';
+                    overlay.appendChild(p);
+                }
+            } else if (data.condition === 'storm') {
+                overlay.style.background = 'white';
+            } else {
+                overlay.style.background = 'none';
+            }
+        }
+
+        function render() {
+            const slide = document.getElementById('slide');
+            const counter = document.getElementById('counter');
+            const article = articles[current];
+
+            counter.textContent = `${current + 1} / ${articles.length}`;
+
+            slide.innerHTML = `
+                <div class="slide-image">
+                    ${article.image ? `<img src="${article.image}" alt="">` : ''}
+                </div>
+                <div class="slide-content">
+                    <div class="slide-title">${article.title}</div>
+                    <div class="dots">
+                        ${articles.map((_, i) => `<span class="${i === current ? 'active' : ''}"></span>`).join('')}
+                    </div>
+                </div>
+            `;
+
+            animateProgress();
+        }
+
+        function animateProgress() {
+            const bar = document.getElementById('bar');
+            bar.style.transition = 'none';
+            bar.style.width = '0%';
+            setTimeout(() => {
+                bar.style.transition = `width ${SLIDE_TIME}ms linear`;
+                bar.style.width = '100%';
+            }, 50);
+        }
+
+        function nextSlide() {
+            if (!articles.length) return;
+            current = (current + 1) % articles.length;
+            render();
+        }
+
+        // Start
+        fetchArticles();
+        fetchWeather();
+        setInterval(nextSlide, SLIDE_TIME);
+        setInterval(fetchArticles, REFRESH_TIME);
+        setInterval(fetchWeather, WEATHER_REFRESH);
+    </script>
+</body>
+</html>

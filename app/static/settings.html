@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <style>
+        :root {
+            --bg: #000;
+            --surface: #111;
+            --border: #222;
+            --text: #fff;
+            --text-dim: #666;
+            --accent: #3b82f6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 200px 1fr;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 30px 0;
+        }
+
+        .sidebar-title {
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            padding: 0 20px;
+            margin-bottom: 20px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 10px 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.9rem;
+            border-left: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .nav-item:hover {
+            color: var(--text);
+            background: rgba(255,255,255,0.03);
+        }
+
+        .nav-item.active {
+            color: var(--text);
+            border-left-color: var(--accent);
+            background: rgba(255,255,255,0.05);
+        }
+
+        /* Main */
+        .main {
+            padding: 40px 60px;
+            max-width: 700px;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 500;
+            margin-bottom: 40px;
+        }
+
+        /* Sections */
+        .section {
+            margin-bottom: 50px;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        /* Fields */
+        .field {
+            margin-bottom: 25px;
+        }
+
+        .field-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .field-info {
+            flex: 1;
+        }
+
+        .field-label {
+            font-size: 0.95rem;
+            margin-bottom: 3px;
+        }
+
+        .field-desc {
+            font-size: 0.8rem;
+            color: var(--text-dim);
+        }
+
+        /* Inputs */
+        input[type="text"],
+        input[type="url"],
+        input[type="time"] {
+            width: 100%;
+            padding: 10px 12px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            color: var(--text);
+            font-size: 0.9rem;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        /* Toggle */
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+
+        .toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--border);
+            border-radius: 24px;
+            transition: 0.2s;
+        }
+
+        .toggle-slider:before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .toggle input:checked + .toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Schedule grid */
+        .schedule-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .schedule-row {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .schedule-row span {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        /* Buttons */
+        .actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.15s;
+        }
+
+        .btn:hover { opacity: 0.85; }
+
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            padding: 12px 20px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-size: 0.85rem;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.2s;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .toast.success { border-color: #22c55e; }
+        .toast.error { border-color: #ef4444; }
+
+        /* Back link */
+        .back-link {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: var(--text-dim);
+            text-decoration: none;
+            font-size: 0.85rem;
+        }
+
+        .back-link:hover { color: var(--text); }
+
+        /* Color grid */
+        .color-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .color-field {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 15px;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 4px;
+        }
+
+        .color-field label {
+            font-size: 0.9rem;
+        }
+
+        .color-field input[type="color"] {
+            width: 40px;
+            height: 28px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background: transparent;
+        }
+    </style>
+</head>
+<body>
+    <a href="/" class="back-link">← Display</a>
+
+    <div class="layout">
+        <nav class="sidebar">
+            <div class="sidebar-title">Settings</div>
+            <a href="#general" class="nav-item active">General</a>
+            <a href="#bus" class="nav-item">Bus Arrivals</a>
+            <a href="#news" class="nav-item">News Feed</a>
+            <a href="#colors" class="nav-item">Colors</a>
+            <a href="#schedule" class="nav-item">Schedule</a>
+        </nav>
+
+        <main class="main">
+            <h1 class="page-title">Display Settings</h1>
+
+            <!-- General -->
+            <section class="section" id="general">
+                <h2 class="section-title">General</h2>
+                <div class="field-row">
+                    <div class="field-info">
+                        <div class="field-label">Demo Mode</div>
+                        <div class="field-desc">Use fake data for testing</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="demoMode">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+            </section>
+
+            <!-- Bus -->
+            <section class="section" id="bus">
+                <h2 class="section-title">Bus Arrivals</h2>
+                <div class="field-row">
+                    <div class="field-info">
+                        <div class="field-label">Show Bus Panel</div>
+                        <div class="field-desc">Display real-time bus arrivals</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="busEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="field">
+                    <label class="field-label">Stop ID</label>
+                    <input type="text" id="busStopId" placeholder="02601-1">
+                </div>
+                <div class="field">
+                    <label class="field-label">Display Name</label>
+                    <input type="text" id="busStopName" placeholder="Lepistiku">
+                </div>
+            </section>
+
+            <!-- News -->
+            <section class="section" id="news">
+                <h2 class="section-title">News Feed</h2>
+                <div class="field">
+                    <label class="field-label">News URL</label>
+                    <input type="url" id="newsUrl" placeholder="https://...">
+                </div>
+            </section>
+
+            <!-- Colors -->
+            <section class="section" id="colors">
+                <h2 class="section-title">Colors</h2>
+                <div class="color-grid">
+                    <div class="color-field">
+                        <label>During Lesson</label>
+                        <input type="color" id="colorLesson" value="#ffffff">
+                    </div>
+                    <div class="color-field">
+                        <label>During Break</label>
+                        <input type="color" id="colorBreak" value="#22c55e">
+                    </div>
+                    <div class="color-field">
+                        <label>Before School</label>
+                        <input type="color" id="colorBeforeSchool" value="#3b82f6">
+                    </div>
+                    <div class="color-field">
+                        <label>After School</label>
+                        <input type="color" id="colorAfterSchool" value="#6b7280">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Schedule -->
+            <section class="section" id="schedule">
+                <h2 class="section-title">Schedule</h2>
+                <div class="schedule-list" id="scheduleList"></div>
+            </section>
+
+            <div class="actions">
+                <button class="btn btn-primary" onclick="save()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="load()">Discard</button>
+            </div>
+        </main>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        const fields = {
+            demoMode: { type: 'checkbox', key: 'demo_mode' },
+            busEnabled: { type: 'checkbox', key: 'bus_enabled' },
+            busStopId: { type: 'text', key: 'bus_stop_id' },
+            busStopName: { type: 'text', key: 'bus_stop_name' },
+            newsUrl: { type: 'text', key: 'news_url' },
+        };
+
+        const colorFields = {
+            colorLesson: 'lesson',
+            colorBreak: 'break',
+            colorBeforeSchool: 'before_school',
+            colorAfterSchool: 'after_school'
+        };
+
+        let settings = {};
+
+        async function load() {
+            try {
+                const res = await fetch('/api/settings');
+                settings = await res.json();
+
+                // Populate fields
+                for (const [id, field] of Object.entries(fields)) {
+                    const el = document.getElementById(id);
+                    if (field.type === 'checkbox') {
+                        el.checked = settings[field.key] !== false;
+                    } else {
+                        el.value = settings[field.key] || '';
+                    }
+                }
+
+                // Colors
+                const colors = settings.colors || {};
+                for (const [id, key] of Object.entries(colorFields)) {
+                    const el = document.getElementById(id);
+                    if (el && colors[key]) el.value = colors[key];
+                }
+
+                // Schedule
+                renderSchedule(settings.schedule || []);
+            } catch (e) {
+                toast('Failed to load settings', 'error');
+            }
+        }
+
+        function renderSchedule(schedule) {
+            const list = document.getElementById('scheduleList');
+            list.innerHTML = schedule.map((p, i) => `
+                <div class="schedule-row">
+                    <span>Period ${i + 1}</span>
+                    <input type="time" id="start${i}" value="${p.start}">
+                    <input type="time" id="end${i}" value="${p.end}">
+                </div>
+            `).join('');
+        }
+
+        async function save() {
+            // Collect fields
+            for (const [id, field] of Object.entries(fields)) {
+                const el = document.getElementById(id);
+                settings[field.key] = field.type === 'checkbox' ? el.checked : el.value;
+            }
+
+            // Collect colors
+            settings.colors = settings.colors || {};
+            for (const [id, key] of Object.entries(colorFields)) {
+                const el = document.getElementById(id);
+                if (el) settings.colors[key] = el.value;
+            }
+
+            // Collect schedule
+            const rows = document.querySelectorAll('.schedule-row');
+            settings.schedule = Array.from(rows).map((row, i) => ({
+                start: row.querySelector(`#start${i}`).value,
+                end: row.querySelector(`#end${i}`).value,
+                name: `Period ${i + 1}`
+            }));
+
+            try {
+                const res = await fetch('/api/settings', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(settings)
+                });
+                if (res.ok) {
+                    toast('Settings saved', 'success');
+                } else {
+                    toast('Failed to save', 'error');
+                }
+            } catch (e) {
+                toast('Failed to save', 'error');
+            }
+        }
+
+        function toast(msg, type) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.className = 'toast show ' + type;
+            setTimeout(() => t.className = 'toast', 3000);
+        }
+
+        // Nav active state
+        document.querySelectorAll('.nav-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+                item.classList.add('active');
+            });
+        });
+
+        // Keyboard shortcut: S to save and go back to display
+        document.addEventListener('keydown', async (e) => {
+            if ((e.key === 's' || e.key === 'S') && !e.target.matches('input')) {
+                await save();
+                window.location.href = '/';
+            }
+        });
+
+        load();
+    </script>
+</body>
+</html>
