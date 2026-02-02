@@ -664,6 +664,9 @@
             }
             // filterMode === 'all' shows everything
 
+            // Sort by period number
+            filtered.sort((a, b) => a.period - b.period);
+
             if (!filtered.length) {
                 list.innerHTML = `<div class="substitutions-empty">${I18N.t('noSubstitutions')}</div>`;
                 return;
