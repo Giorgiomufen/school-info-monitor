@@ -607,6 +607,11 @@
                 } else {
                     creditEl.style.display = 'none';
                 }
+
+                // Fetch data after I18N is initialized
+                fetchArticles();
+                fetchBus();
+                fetchSubstitutions();
             } catch (e) {
                 console.error('Failed to load settings');
             }
@@ -1231,10 +1236,7 @@
             document.getElementById('sleepScreen').classList.toggle('active', !isAwake);
         }
 
-        // Fetch data from APIs (real-time intervals, not affected by demo mode)
-        fetchArticles();
-        fetchBus();
-        fetchSubstitutions();
+        // Set up refresh intervals (initial fetch happens in loadSettings after I18N init)
         setInterval(fetchArticles, REFRESH_TIME);           // 15 min
         setInterval(fetchBus, BUS_REFRESH);                 // 1 min
         setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);

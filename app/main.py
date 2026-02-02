@@ -22,20 +22,6 @@ BASE_URL = "https://www.tallinn.ee"
 BUS_API_URL = "https://transport.tallinn.ee/siri-stop-departures.php"
 SETTINGS_FILE = "settings.json"
 
-# Route destinations (common routes near Lepistiku)
-ROUTE_DESTINATIONS = {
-    "34": "Veskimetsa",
-    "34A": "Veskimetsa",
-    "15": "Kopli",
-    "4": "Tondi",
-    "17": "Kopli",
-    "17A": "Kadaka",
-    "23": "Kopli",
-    "27": "Kopli",
-    "32": "Haabersti",
-    "47": "Tiskre",
-}
-
 # Default settings
 DEFAULT_SETTINGS = {
     "language": "et",
@@ -47,7 +33,7 @@ DEFAULT_SETTINGS = {
         "end": "23:59"
     },
     "bus_enabled": False,
-    "bus_stop_id": "",
+    "bus_stop_id": "",  # Use SiriID from transport.tallinn.ee/data/stops.txt (e.g., 873 for Lepistiku)
     "bus_stop_name": "",
     "bus_display_windows": [
         {"start": "00:00", "end": "23:59"}
@@ -231,7 +217,10 @@ async def fetch_bus_arrivals():
         print("Bus: demo mode")
         return
 
-    bus_stop_id = settings.get("bus_stop_id", DEFAULT_SETTINGS["bus_stop_id"])
+    bus_stop_id = settings.get("bus_stop_id") or DEFAULT_SETTINGS.get("bus_stop_id")
+    if not bus_stop_id:
+        bus_arrivals = []
+        return
     try:
         async with httpx.AsyncClient() as client:
             response = await client.get(
@@ -241,25 +230,31 @@ async def fetch_bus_arrivals():
             )
             text = response.text
 
-        # Parse CSV: Transport,RouteNum,ExpectedTimeInSeconds,ScheduleTimeInSeconds,Destination,...
+        # Parse response format:
+        # Line 1: Header with timestamp
+        # Line 2: "stop,{siriId}"
+        # Line 3+: "{type},{route},{expectedSec},{scheduledSec},{destination},{secsUntilArrival},{flag}"
         lines = text.strip().split('\n')
-        if len(lines) <= 1:
+        if len(lines) <= 2:
             bus_arrivals = []
             print("No buses currently")
             return
 
         arrivals = []
-        for line in lines[1:]:
+        for line in lines[1:]:  # Skip header
             parts = line.split(',')
-            if len(parts) >= 4:
-                transport_type = parts[0]
+            # Skip the "stop,X" line
+            if parts[0] == "stop":
+                continue
+            if len(parts) >= 6:
+                transport_type = parts[0].lower()  # "bus", "tram", "trolley"
                 route = parts[1]
-                expected_sec = int(parts[2]) if parts[2] else 0
-                destination = ROUTE_DESTINATIONS.get(route, "")
+                destination = parts[4] if len(parts) > 4 else ""
+                secs_until = int(parts[5]) if parts[5].isdigit() else 0
 
-                minutes = expected_sec // 60
-                type_names = {"1": "Tram", "2": "Trolley", "3": "Bus"}
-                type_name = type_names.get(transport_type, "")
+                minutes = secs_until // 60
+                type_names = {"bus": "Bus", "tram": "Tram", "trolley": "Trolley"}
+                type_name = type_names.get(transport_type, transport_type.title())
 
                 arrivals.append({
                     "type": type_name,
