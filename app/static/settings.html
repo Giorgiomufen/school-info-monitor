@@ -462,6 +462,11 @@
                     <input type="number" id="busCriticalMins" min="1" max="10" value="2">
                 </div>
                 <div class="field">
+                    <label class="field-label">Refresh Interval (seconds)</label>
+                    <div class="field-desc">How often to fetch arrivals (10-60)</div>
+                    <input type="number" id="busRefreshSeconds" min="10" max="60" value="20">
+                </div>
+                <div class="field">
                     <label class="field-label">Display Time Windows</label>
                     <div class="field-desc">Panel only shows during these times</div>
                     <div class="display-windows-list" id="busDisplayWindowsList"></div>
@@ -568,6 +573,7 @@
             busStopName: { type: 'text', key: 'bus_stop_name' },
             busUrgentMins: { type: 'number', key: 'bus_urgent_mins' },
             busCriticalMins: { type: 'number', key: 'bus_critical_mins' },
+            busRefreshSeconds: { type: 'number', key: 'bus_refresh_seconds' },
             newsUrl: { type: 'text', key: 'news_url' },
             substitutionsEnabled: { type: 'checkbox', key: 'substitutions.enabled' },
             substitutionsUrl: { type: 'text', key: 'substitutions.url' },

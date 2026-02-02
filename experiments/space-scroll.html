@@ -483,7 +483,7 @@
         const PAUSE_TIME = 12000;
         const SCROLL_DURATION = 800;
         const REFRESH_TIME = 15 * 60 * 1000;
-        const BUS_REFRESH = 60 * 1000;
+        let BUS_REFRESH = 20 * 1000;  // Loaded from settings
 
         // Display hours config
         let DISPLAY_HOURS = {
@@ -595,6 +595,7 @@
                 }
                 if (settings.bus_urgent_mins !== undefined) BUS_URGENT_MINS = settings.bus_urgent_mins;
                 if (settings.bus_critical_mins !== undefined) BUS_CRITICAL_MINS = settings.bus_critical_mins;
+                if (settings.bus_refresh_seconds !== undefined) BUS_REFRESH = settings.bus_refresh_seconds * 1000;
 
                 // Load substitutions config
                 if (settings.substitutions) {
@@ -624,6 +625,9 @@
                 fetchArticles();
                 fetchBus();
                 fetchSubstitutions();
+
+                // Set up bus refresh interval (after BUS_REFRESH is loaded)
+                setInterval(fetchBus, BUS_REFRESH);
             } catch (e) {
                 console.error('Failed to load settings');
             }
@@ -1250,9 +1254,8 @@
             document.getElementById('sleepScreen').classList.toggle('active', !isAwake);
         }
 
-        // Set up refresh intervals (initial fetch happens in loadSettings after I18N init)
+        // Set up refresh intervals (initial fetch + bus interval in loadSettings)
         setInterval(fetchArticles, REFRESH_TIME);           // 15 min
-        setInterval(fetchBus, BUS_REFRESH);                 // 1 min
         setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);
         setInterval(autoScrollSubstitutions, SUBS_SCROLL_PAUSE);
     </script>
