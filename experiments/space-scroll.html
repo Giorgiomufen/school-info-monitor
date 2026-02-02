@@ -294,6 +294,14 @@
             font-weight: 300;
         }
 
+        .bus-item.urgent {
+            color: #ffcc00;
+        }
+
+        .bus-item.critical {
+            color: #ff4444;
+        }
+
         .bus-empty {
             opacity: 0.3;
             font-size: 0.85rem;
@@ -495,6 +503,8 @@
         // Bus config
         let BUS_ENABLED = true;
         let BUS_DISPLAY_WINDOWS = [{ start: '07:00', end: '16:00' }];
+        let BUS_URGENT_MINS = 3;   // Yellow when <= this
+        let BUS_CRITICAL_MINS = 2; // Red when <= this
 
         // School schedule - loaded from settings API
         let SCHEDULE = [
@@ -583,6 +593,8 @@
                 if (settings.bus_display_windows) {
                     BUS_DISPLAY_WINDOWS = settings.bus_display_windows;
                 }
+                if (settings.bus_urgent_mins !== undefined) BUS_URGENT_MINS = settings.bus_urgent_mins;
+                if (settings.bus_critical_mins !== undefined) BUS_CRITICAL_MINS = settings.bus_critical_mins;
 
                 // Load substitutions config
                 if (settings.substitutions) {
@@ -1148,15 +1160,17 @@
                 return;
             }
 
-            list.innerHTML = buses.map(b => `
-                <div class="bus-item">
+            list.innerHTML = buses.map(b => {
+                const urgency = b.minutes <= BUS_CRITICAL_MINS ? 'critical' : b.minutes <= BUS_URGENT_MINS ? 'urgent' : '';
+                return `
+                <div class="bus-item ${urgency}">
                     <div>
-                        <div class="bus-route">${b.route}${b.destination ? ' \u2192 ' + b.destination : ''}</div>
+                        <div class="bus-route">${b.route}${b.destination ? ' → ' + b.destination : ''}</div>
                         <div class="bus-type">${I18N.getTransportType(b.type)}</div>
                     </div>
                     <div class="bus-time">${b.time}</div>
                 </div>
-            `).join('');
+            `}).join('');
         }
 
         function render() {

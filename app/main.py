@@ -38,6 +38,8 @@ DEFAULT_SETTINGS = {
     "bus_display_windows": [
         {"start": "00:00", "end": "23:59"}
     ],
+    "bus_urgent_mins": 3,    # Yellow when <= this (hurry)
+    "bus_critical_mins": 2,  # Red when <= this (run!)
     "news_url": "https://www.tallinn.ee/et/group/580/news?news_heading=20315",
     "colors": {
         "lesson": "#ff0000",

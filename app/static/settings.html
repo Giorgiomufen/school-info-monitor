@@ -452,6 +452,16 @@
                     <input type="text" id="busStopName" placeholder="Lepistiku">
                 </div>
                 <div class="field">
+                    <label class="field-label">Urgent Threshold (yellow)</label>
+                    <div class="field-desc">Minutes or less - hurry up</div>
+                    <input type="number" id="busUrgentMins" min="1" max="10" value="3">
+                </div>
+                <div class="field">
+                    <label class="field-label">Critical Threshold (red)</label>
+                    <div class="field-desc">Minutes or less - run!</div>
+                    <input type="number" id="busCriticalMins" min="1" max="10" value="2">
+                </div>
+                <div class="field">
                     <label class="field-label">Display Time Windows</label>
                     <div class="field-desc">Panel only shows during these times</div>
                     <div class="display-windows-list" id="busDisplayWindowsList"></div>
@@ -556,6 +566,8 @@
             busEnabled: { type: 'checkbox', key: 'bus_enabled' },
             busStopId: { type: 'text', key: 'bus_stop_id' },
             busStopName: { type: 'text', key: 'bus_stop_name' },
+            busUrgentMins: { type: 'number', key: 'bus_urgent_mins' },
+            busCriticalMins: { type: 'number', key: 'bus_critical_mins' },
             newsUrl: { type: 'text', key: 'news_url' },
             substitutionsEnabled: { type: 'checkbox', key: 'substitutions.enabled' },
             substitutionsUrl: { type: 'text', key: 'substitutions.url' },

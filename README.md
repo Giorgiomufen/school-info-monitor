@@ -5,7 +5,7 @@ SpaceX-inspired info display for Tallinna Tehnikagümnaasium.
 ## Features
 
 - **News feed** - scraped from school website with images and descriptions
-- **Bus arrivals** - real-time from Tallinn transport API with destinations
+- **Bus arrivals** - real-time from Tallinn transport API with urgency colors (yellow/red)
 - **Mission clock** - countdown to next lesson/break, shows current time when idle
 - **Timeline** - school day progress (08:00-15:45)
 - **Substitutions panel** - schedule changes from EduPage with filtering
@@ -53,7 +53,7 @@ Access via http://localhost:8000/settings or press `S`
 - Language (English / Eesti)
 - Demo mode toggle + speed
 - Display hours (auto sleep)
-- Bus panel on/off with display windows
+- Bus panel on/off with display windows and urgency thresholds
 - Substitutions panel with filter modes
 - News URL
 - Colors for each state
