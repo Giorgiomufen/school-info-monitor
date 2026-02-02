@@ -81,6 +81,8 @@ const I18N = {
             displayWindows: 'Display Time Windows',
             displayWindowsDesc: 'Panel only shows during these times',
             noSubstitutions: 'No changes today',
+            noUpcomingSubstitutions: 'No upcoming changes',
+            noNextSubstitutions: 'No changes for next lesson',
             cancelled: 'Cancelled',
             roomChange: 'Room change'
         },
@@ -154,6 +156,8 @@ const I18N = {
             displayWindows: 'Kuvamise ajaaknad',
             displayWindowsDesc: 'Paneel kuvatakse ainult nendel aegadel',
             noSubstitutions: 'T\u00e4na muudatusi pole',
+            noUpcomingSubstitutions: 'Eelseisvaid muudatusi pole',
+            noNextSubstitutions: 'J\u00e4rgmises tunnis muudatusi pole',
             cancelled: 'T\u00fchistatud',
             roomChange: 'Ruumi vahetus'
         }

@@ -668,7 +668,16 @@
             filtered.sort((a, b) => a.period - b.period);
 
             if (!filtered.length) {
-                list.innerHTML = `<div class="substitutions-empty">${I18N.t('noSubstitutions')}</div>`;
+                // Show appropriate message based on filter mode
+                let emptyMsg;
+                if (filterMode === 'upcoming') {
+                    emptyMsg = I18N.t('noUpcomingSubstitutions');
+                } else if (filterMode === 'next') {
+                    emptyMsg = I18N.t('noNextSubstitutions');
+                } else {
+                    emptyMsg = I18N.t('noSubstitutions');
+                }
+                list.innerHTML = `<div class="substitutions-empty">${emptyMsg}</div>`;
                 return;
             }
 
