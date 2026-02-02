@@ -984,8 +984,20 @@
             const interval = DEMO_MODE ? 50 : 1000;
             setInterval(updateTopTimeline, interval);
             setInterval(updateMissionClock, interval);
+
+            // Time-sensitive updates - faster in demo mode
+            const slowInterval = DEMO_MODE ? 200 : 1000;
+            setInterval(updateSubstitutionsVisibility, slowInterval);
+            setInterval(updateSleepScreen, slowInterval);
+
+            // Substitutions filtering - check every 500ms in demo, 60s in real
+            const subsInterval = DEMO_MODE ? 500 : 60000;
+            setInterval(() => renderSubstitutions(rawSubstitutions), subsInterval);
+
             updateTopTimeline();
             updateMissionClock();
+            updateSubstitutionsVisibility();
+            updateSleepScreen();
         }
 
         async function fetchArticles() {
@@ -1104,18 +1116,14 @@
             document.getElementById('sleepScreen').classList.toggle('active', !isAwake);
         }
 
+        // Fetch data from APIs (real-time intervals, not affected by demo mode)
         fetchArticles();
         fetchBus();
         fetchSubstitutions();
-        setInterval(fetchArticles, REFRESH_TIME);
-        setInterval(fetchBus, BUS_REFRESH);
+        setInterval(fetchArticles, REFRESH_TIME);           // 15 min
+        setInterval(fetchBus, BUS_REFRESH);                 // 1 min
         setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);
-        setInterval(updateSubstitutionsVisibility, 1000);
         setInterval(autoScrollSubstitutions, SUBS_SCROLL_PAUSE);
-        setInterval(() => renderSubstitutions(rawSubstitutions), 60 * 1000);
-        setInterval(updateSleepScreen, 1000);
-        updateSubstitutionsVisibility();
-        updateSleepScreen();
     </script>
 </body>
 </html>
