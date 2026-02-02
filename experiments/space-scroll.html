@@ -333,7 +333,7 @@
 
             <div class="news-scroll-container" id="scrollContainer">
                 <div class="news-scroll" id="newsScroll">
-                    <div class="loading">Loading...</div>
+                    <div class="loading" id="loadingText">Loading...</div>
                 </div>
             </div>
 
@@ -354,6 +354,7 @@
         </div>
     </div>
 
+    <script src="/static/i18n.js"></script>
     <script>
         const PAUSE_TIME = 12000;
         const SCROLL_DURATION = 800;
@@ -411,6 +412,11 @@
             try {
                 const res = await fetch('/api/settings');
                 const settings = await res.json();
+
+                // Initialize i18n
+                I18N.init(settings.language || 'en');
+                applyTranslations();
+
                 SCHEDULE = settings.schedule || SCHEDULE;
                 DEMO_MODE = settings.demo_mode === true;
                 if (settings.colors) {
@@ -438,6 +444,16 @@
                 console.error('Failed to load settings');
             }
         }
+
+        // Apply translations to static elements
+        function applyTranslations() {
+            const loadingText = document.getElementById('loadingText');
+            if (loadingText) loadingText.textContent = I18N.t('loading');
+
+            const clockStatus = document.getElementById('clockStatus');
+            if (clockStatus) clockStatus.textContent = I18N.t('loadingSchedule');
+        }
+
         loadSettings();
 
         // Keyboard shortcut: S for settings
@@ -491,7 +507,7 @@
         }
 
         function getDayName(date) {
-            return ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][date.getDay()];
+            return I18N.getDayName(date.getDay());
         }
 
         function applyStateColor(state) {
@@ -518,7 +534,7 @@
                 const nextSchool = getNextSchoolDay(now);
                 const remaining = nextSchool - now;
 
-                label.textContent = 'School starts in';
+                label.textContent = I18N.t('schoolStartsIn');
                 time.textContent = formatCountdown(remaining);
                 status.textContent = getDayName(nextSchool) + ' 08:00';
                 applyStateColor('after_school');
@@ -533,9 +549,9 @@
                 const mins = Math.floor(remaining / 60);
                 const secs = remaining % 60;
 
-                label.textContent = 'School starts in';
+                label.textContent = I18N.t('schoolStartsIn');
                 time.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                status.textContent = SCHEDULE[0].name + ' upcoming';
+                status.textContent = I18N.formatPeriod(1) + ' ' + I18N.t('upcoming');
                 applyStateColor('before_school');
                 return;
             }
@@ -554,9 +570,9 @@
                     const mins = Math.floor(remaining / 60);
                     const secs = remaining % 60;
 
-                    label.textContent = 'Break in';
+                    label.textContent = I18N.t('breakIn');
                     time.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                    status.textContent = period.name + ' in progress';
+                    status.textContent = I18N.formatPeriod(i + 1) + ' ' + I18N.t('inProgress');
                     applyStateColor('lesson');
                     return;
                 }
@@ -572,9 +588,9 @@
                         const mins = Math.floor(remaining / 60);
                         const secs = remaining % 60;
 
-                        label.textContent = 'Lesson starts in';
+                        label.textContent = I18N.t('lessonStartsIn');
                         time.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                        status.textContent = nextPeriod.name + ' upcoming';
+                        status.textContent = I18N.formatPeriod(i + 2) + ' ' + I18N.t('upcoming');
                         applyStateColor('break');
                         return;
                     }
@@ -585,7 +601,7 @@
             const nextSchool = getNextSchoolDay(now);
             const remaining = nextSchool - now;
 
-            label.textContent = 'School starts in';
+            label.textContent = I18N.t('schoolStartsIn');
             time.textContent = formatCountdown(remaining);
             status.textContent = getDayName(nextSchool) + ' 08:00';
             applyStateColor('after_school');
@@ -706,15 +722,15 @@
             const list = document.getElementById('busList');
 
             if (!buses.length) {
-                list.innerHTML = '<div class="bus-empty">No buses</div>';
+                list.innerHTML = `<div class="bus-empty">${I18N.t('noBuses')}</div>`;
                 return;
             }
 
             list.innerHTML = buses.map(b => `
                 <div class="bus-item">
                     <div>
-                        <div class="bus-route">${b.route}${b.destination ? ' → ' + b.destination : ''}</div>
-                        <div class="bus-type">${b.type}</div>
+                        <div class="bus-route">${b.route}${b.destination ? ' \u2192 ' + b.destination : ''}</div>
+                        <div class="bus-type">${I18N.getTransportType(b.type)}</div>
                     </div>
                     <div class="bus-time">${b.time}</div>
                 </div>

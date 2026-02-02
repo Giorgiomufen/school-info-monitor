@@ -37,6 +37,7 @@ ROUTE_DESTINATIONS = {
 
 # Default settings
 DEFAULT_SETTINGS = {
+    "language": "en",
     "demo_mode": False,
     "bus_enabled": True,
     "bus_stop_id": "02601-1",

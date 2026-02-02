@@ -11,6 +11,7 @@ SpaceX-inspired info display for Tallinna Tehnikagümnaasium.
 - **Settings page** - customizable via web UI
 - **Demo mode** - fast time simulation (60x speed)
 - **Color states** - lesson/break/before/after school
+- **Multi-language** - English and Estonian (i18n)
 
 ## How to Run
 
@@ -29,7 +30,8 @@ school-info-monitor/
 │   ├── stop.bat
 │   └── static/
 │       ├── display.html
-│       └── settings.html
+│       ├── settings.html
+│       └── i18n.js          # Internationalization module
 └── experiments/
     └── space-scroll.html    # Main display (SpaceX style)
 ```
@@ -45,6 +47,7 @@ school-info-monitor/
 
 Access via http://localhost:8000/settings or press `S`
 
+- Language (English / Eesti)
 - Demo mode toggle
 - Bus panel on/off
 - Bus stop ID/name
@@ -61,6 +64,14 @@ Access via http://localhost:8000/settings or press `S`
 - `GET /api/settings` - current settings
 - `POST /api/settings` - update settings
 - `GET /api/schedule` - school schedule
+
+## Adding Languages
+
+To add a new language (e.g., Russian):
+
+1. In `app/static/i18n.js`, add to `languages`: `ru: { name: 'Russian', nativeName: 'Русский' }`
+2. Add a `ru: { ... }` translations object with all keys
+3. Add `<option value="ru">Русский</option>` to the language selector in `settings.html`
 
 ---
 

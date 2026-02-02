@@ -125,7 +125,8 @@
         /* Inputs */
         input[type="text"],
         input[type="url"],
-        input[type="time"] {
+        input[type="time"],
+        select {
             width: 100%;
             padding: 10px 12px;
             background: var(--surface);
@@ -135,7 +136,14 @@
             font-size: 0.9rem;
         }
 
-        input:focus {
+        select {
+            width: auto;
+            min-width: 150px;
+            cursor: pointer;
+        }
+
+        input:focus,
+        select:focus {
             outline: none;
             border-color: var(--accent);
         }
@@ -299,28 +307,31 @@
     </style>
 </head>
 <body>
-    <a href="/" class="back-link">← Display</a>
+    <a href="/" class="back-link" data-i18n="backToDisplay">\u2190 Display</a>
+
+    <script src="/static/i18n.js"></script>
 
     <div class="layout">
         <nav class="sidebar">
-            <div class="sidebar-title">Settings</div>
-            <a href="#general" class="nav-item active">General</a>
-            <a href="#bus" class="nav-item">Bus Arrivals</a>
-            <a href="#news" class="nav-item">News Feed</a>
-            <a href="#colors" class="nav-item">Colors</a>
-            <a href="#schedule" class="nav-item">Schedule</a>
+            <div class="sidebar-title" data-i18n="settings">Settings</div>
+            <a href="#general" class="nav-item active" data-i18n="general">General</a>
+            <a href="#language" class="nav-item" data-i18n="language">Language</a>
+            <a href="#bus" class="nav-item" data-i18n="busArrivals">Bus Arrivals</a>
+            <a href="#news" class="nav-item" data-i18n="newsFeed">News Feed</a>
+            <a href="#colors" class="nav-item" data-i18n="colors">Colors</a>
+            <a href="#schedule" class="nav-item" data-i18n="schedule">Schedule</a>
         </nav>
 
         <main class="main">
-            <h1 class="page-title">Display Settings</h1>
+            <h1 class="page-title" data-i18n="displaySettings">Display Settings</h1>
 
             <!-- General -->
             <section class="section" id="general">
-                <h2 class="section-title">General</h2>
+                <h2 class="section-title" data-i18n="general">General</h2>
                 <div class="field-row">
                     <div class="field-info">
-                        <div class="field-label">Demo Mode</div>
-                        <div class="field-desc">Use fake data for testing</div>
+                        <div class="field-label" data-i18n="demoMode">Demo Mode</div>
+                        <div class="field-desc" data-i18n="demoModeDesc">Use fake data for testing</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="demoMode">
@@ -329,13 +340,27 @@
                 </div>
             </section>
 
-            <!-- Bus -->
-            <section class="section" id="bus">
-                <h2 class="section-title">Bus Arrivals</h2>
+            <!-- Language -->
+            <section class="section" id="language">
+                <h2 class="section-title" data-i18n="language">Language</h2>
                 <div class="field-row">
                     <div class="field-info">
-                        <div class="field-label">Show Bus Panel</div>
-                        <div class="field-desc">Display real-time bus arrivals</div>
+                        <div class="field-label">Language / Keel</div>
+                    </div>
+                    <select id="languageSelect">
+                        <option value="en">English</option>
+                        <option value="et">Eesti</option>
+                    </select>
+                </div>
+            </section>
+
+            <!-- Bus -->
+            <section class="section" id="bus">
+                <h2 class="section-title" data-i18n="busArrivals">Bus Arrivals</h2>
+                <div class="field-row">
+                    <div class="field-info">
+                        <div class="field-label" data-i18n="showBusPanel">Show Bus Panel</div>
+                        <div class="field-desc" data-i18n="showBusPanelDesc">Display real-time bus arrivals</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="busEnabled">
@@ -343,42 +368,42 @@
                     </label>
                 </div>
                 <div class="field">
-                    <label class="field-label">Stop ID</label>
+                    <label class="field-label" data-i18n="stopId">Stop ID</label>
                     <input type="text" id="busStopId" placeholder="02601-1">
                 </div>
                 <div class="field">
-                    <label class="field-label">Display Name</label>
+                    <label class="field-label" data-i18n="displayName">Display Name</label>
                     <input type="text" id="busStopName" placeholder="Lepistiku">
                 </div>
             </section>
 
             <!-- News -->
             <section class="section" id="news">
-                <h2 class="section-title">News Feed</h2>
+                <h2 class="section-title" data-i18n="newsFeed">News Feed</h2>
                 <div class="field">
-                    <label class="field-label">News URL</label>
+                    <label class="field-label" data-i18n="newsUrl">News URL</label>
                     <input type="url" id="newsUrl" placeholder="https://...">
                 </div>
             </section>
 
             <!-- Colors -->
             <section class="section" id="colors">
-                <h2 class="section-title">Colors</h2>
+                <h2 class="section-title" data-i18n="colors">Colors</h2>
                 <div class="color-grid">
                     <div class="color-field">
-                        <label>During Lesson</label>
+                        <label data-i18n="duringLesson">During Lesson</label>
                         <input type="color" id="colorLesson" value="#ffffff">
                     </div>
                     <div class="color-field">
-                        <label>During Break</label>
+                        <label data-i18n="duringBreak">During Break</label>
                         <input type="color" id="colorBreak" value="#22c55e">
                     </div>
                     <div class="color-field">
-                        <label>Before School</label>
+                        <label data-i18n="beforeSchool">Before School</label>
                         <input type="color" id="colorBeforeSchool" value="#3b82f6">
                     </div>
                     <div class="color-field">
-                        <label>After School</label>
+                        <label data-i18n="afterSchool">After School</label>
                         <input type="color" id="colorAfterSchool" value="#6b7280">
                     </div>
                 </div>
@@ -386,13 +411,13 @@
 
             <!-- Schedule -->
             <section class="section" id="schedule">
-                <h2 class="section-title">Schedule</h2>
+                <h2 class="section-title" data-i18n="schedule">Schedule</h2>
                 <div class="schedule-list" id="scheduleList"></div>
             </section>
 
             <div class="actions">
-                <button class="btn btn-primary" onclick="save()">Save Changes</button>
-                <button class="btn btn-secondary" onclick="load()">Discard</button>
+                <button class="btn btn-primary" onclick="save()" data-i18n="saveChanges">Save Changes</button>
+                <button class="btn btn-secondary" onclick="load()" data-i18n="discard">Discard</button>
             </div>
         </main>
     </div>
@@ -401,6 +426,7 @@
 
     <script>
         const fields = {
+            languageSelect: { type: 'select', key: 'language' },
             demoMode: { type: 'checkbox', key: 'demo_mode' },
             busEnabled: { type: 'checkbox', key: 'bus_enabled' },
             busStopId: { type: 'text', key: 'bus_stop_id' },
@@ -422,11 +448,17 @@
                 const res = await fetch('/api/settings');
                 settings = await res.json();
 
+                // Initialize i18n and apply translations
+                I18N.init(settings.language || 'en');
+                applyTranslations();
+
                 // Populate fields
                 for (const [id, field] of Object.entries(fields)) {
                     const el = document.getElementById(id);
                     if (field.type === 'checkbox') {
                         el.checked = settings[field.key] !== false;
+                    } else if (field.type === 'select') {
+                        el.value = settings[field.key] || 'en';
                     } else {
                         el.value = settings[field.key] || '';
                     }
@@ -442,15 +474,35 @@
                 // Schedule
                 renderSchedule(settings.schedule || []);
             } catch (e) {
-                toast('Failed to load settings', 'error');
+                toast(I18N.t('failedToLoad'), 'error');
             }
         }
+
+        // Apply translations to all elements with data-i18n attribute
+        function applyTranslations() {
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                const translated = I18N.t(key);
+                if (el.tagName === 'A' && el.classList.contains('back-link')) {
+                    el.textContent = '\u2190 ' + translated;
+                } else {
+                    el.textContent = translated;
+                }
+            });
+        }
+
+        // Re-apply translations when language changes
+        document.getElementById('languageSelect').addEventListener('change', function() {
+            I18N.init(this.value);
+            applyTranslations();
+            renderSchedule(settings.schedule || []);
+        });
 
         function renderSchedule(schedule) {
             const list = document.getElementById('scheduleList');
             list.innerHTML = schedule.map((p, i) => `
                 <div class="schedule-row">
-                    <span>Period ${i + 1}</span>
+                    <span>${I18N.formatPeriod(i + 1)}</span>
                     <input type="time" id="start${i}" value="${p.start}">
                     <input type="time" id="end${i}" value="${p.end}">
                 </div>
@@ -461,7 +513,13 @@
             // Collect fields
             for (const [id, field] of Object.entries(fields)) {
                 const el = document.getElementById(id);
-                settings[field.key] = field.type === 'checkbox' ? el.checked : el.value;
+                if (field.type === 'checkbox') {
+                    settings[field.key] = el.checked;
+                } else if (field.type === 'select') {
+                    settings[field.key] = el.value;
+                } else {
+                    settings[field.key] = el.value;
+                }
             }
 
             // Collect colors
@@ -486,12 +544,12 @@
                     body: JSON.stringify(settings)
                 });
                 if (res.ok) {
-                    toast('Settings saved', 'success');
+                    toast(I18N.t('settingsSaved'), 'success');
                 } else {
-                    toast('Failed to save', 'error');
+                    toast(I18N.t('failedToSave'), 'error');
                 }
             } catch (e) {
-                toast('Failed to save', 'error');
+                toast(I18N.t('failedToSave'), 'error');
             }
         }
 
