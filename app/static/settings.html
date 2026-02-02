@@ -395,6 +395,20 @@
                     <span style="color: var(--text-dim);">to</span>
                     <input type="time" id="displayHoursEnd" value="17:00" style="width: 120px;">
                 </div>
+                <div class="field-row">
+                    <div class="field-info">
+                        <div class="field-label">Show Credit</div>
+                        <div class="field-desc">Display creator credit on screen</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="showCredit">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="field">
+                    <label class="field-label">Credit Text</label>
+                    <input type="text" id="creditText" placeholder="Made by Giorgio Giancarlo Lelmi">
+                </div>
             </section>
 
             <!-- Language -->
@@ -541,6 +555,8 @@
             substitutionsUrl: { type: 'text', key: 'substitutions.url' },
             substitutionsRefresh: { type: 'number', key: 'substitutions.refresh_minutes' },
             substitutionsFilterMode: { type: 'select', key: 'substitutions.filter_mode' },
+            showCredit: { type: 'checkbox', key: 'show_credit' },
+            creditText: { type: 'text', key: 'credit_text' },
         };
 
         const colorFields = {

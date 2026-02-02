@@ -21,6 +21,7 @@ SpaceX-inspired info display for Tallinna Tehnikagümnaasium.
 - Color-coded states (lesson/break/before/after school)
 - i18n support (English, Estonian)
 - Display hours (configurable sleep schedule)
+- Creator credit (customizable "Made by" text)
 
 ## Tech
 

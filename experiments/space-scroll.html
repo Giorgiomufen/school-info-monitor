@@ -402,11 +402,23 @@
         .sleep-screen.active {
             display: block;
         }
+
+        .credit {
+            position: fixed;
+            bottom: 20px;
+            left: 40px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.6;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
     <div class="space-bg"></div>
     <div class="sleep-screen" id="sleepScreen"></div>
+    <div class="credit" id="credit"></div>
 
     <div class="container">
         <header>
@@ -585,6 +597,17 @@
                 // Load clock idle threshold
                 if (settings.clock_idle_hours !== undefined) {
                     CLOCK_IDLE_HOURS = settings.clock_idle_hours;
+                }
+
+                // Load credit
+                const creditEl = document.getElementById('credit');
+                if (settings.show_credit !== false && settings.credit_text) {
+                    creditEl.textContent = settings.credit_text;
+                    creditEl.style.display = '';
+                } else if (settings.show_credit === false) {
+                    creditEl.style.display = 'none';
+                } else {
+                    creditEl.textContent = 'Made by Giorgio Giancarlo Lelmi';
                 }
             } catch (e) {
                 console.error('Failed to load settings');
