@@ -439,8 +439,8 @@
                     <div class="clock-status" id="clockStatus">Loading schedule...</div>
                 </div>
 
-                <div class="bus-panel">
-                    <div class="bus-header">Lepistiku</div>
+                <div class="bus-panel" id="busPanel">
+                    <div class="bus-header" id="busHeader">Lepistiku</div>
                     <div class="bus-list" id="busList">
                         <div class="bus-empty">Loading...</div>
                     </div>
@@ -480,6 +480,10 @@
             display_windows: [{ start: '07:00', end: '10:00' }]
         };
 
+        // Bus config
+        let BUS_ENABLED = true;
+        let BUS_DISPLAY_WINDOWS = [{ start: '07:00', end: '16:00' }];
+
         // School schedule - loaded from settings API
         let SCHEDULE = [
             { start: '08:00', end: '08:45', name: 'Period 1' },
@@ -491,6 +495,9 @@
             { start: '14:10', end: '14:55', name: 'Period 7' },
             { start: '15:00', end: '15:45', name: 'Period 8' },
         ];
+
+        // Clock idle threshold (hours) - show current time instead of countdown when > this
+        let CLOCK_IDLE_HOURS = 2;
 
         // Demo mode
         let DEMO_MODE = false;
@@ -557,14 +564,12 @@
                 startUIUpdates();
 
                 // Update bus stop name
-                document.querySelector('.bus-header').textContent = settings.bus_stop_name || 'Bus Stop';
+                document.getElementById('busHeader').textContent = settings.bus_stop_name || 'Bus Stop';
 
-                // Hide bus panel if disabled
-                const busPanel = document.querySelector('.bus-panel');
-                if (settings.bus_enabled === false) {
-                    busPanel.style.display = 'none';
-                } else {
-                    busPanel.style.display = '';
+                // Load bus config
+                BUS_ENABLED = settings.bus_enabled !== false;
+                if (settings.bus_display_windows) {
+                    BUS_DISPLAY_WINDOWS = settings.bus_display_windows;
                 }
 
                 // Load substitutions config
@@ -575,6 +580,11 @@
                 // Load display hours
                 if (settings.display_hours) {
                     DISPLAY_HOURS = settings.display_hours;
+                }
+
+                // Load clock idle threshold
+                if (settings.clock_idle_hours !== undefined) {
+                    CLOCK_IDLE_HOURS = settings.clock_idle_hours;
                 }
             } catch (e) {
                 console.error('Failed to load settings');
@@ -720,6 +730,43 @@
             panel.style.flexDirection = 'column';
         }
 
+        // Update bus panel visibility based on display windows
+        function updateBusVisibility() {
+            const panel = document.getElementById('busPanel');
+            if (!BUS_ENABLED) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            const now = getDemoTime();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+            const day = now.getDay();
+
+            // Hide on weekends
+            if (day === 0 || day === 6) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            // Check if within any display window
+            const windows = BUS_DISPLAY_WINDOWS || [];
+            if (windows.length === 0) {
+                panel.style.display = '';
+                return;
+            }
+
+            const shouldShow = windows.some(w => {
+                const [startH, startM] = w.start.split(':').map(Number);
+                const [endH, endM] = w.end.split(':').map(Number);
+                const start = startH * 60 + startM;
+                const end = endH * 60 + endM;
+                return currentMin >= start && currentMin <= end;
+            });
+
+            panel.style.display = shouldShow ? '' : 'none';
+        }
+
+
         // Auto-scroll substitutions
         let subsScrollPos = 0;
         let subsScrollDir = 1;
@@ -827,9 +874,18 @@
                 const nextSchool = getNextSchoolDay(now);
                 const remaining = nextSchool - now;
 
-                label.textContent = I18N.t('schoolStartsIn');
-                time.textContent = formatCountdown(remaining);
-                status.textContent = getDayName(nextSchool) + ' 08:00';
+                // If more than 2 hours until school, show current time instead
+                if (remaining > CLOCK_IDLE_HOURS * 60 * 60 * 1000) {
+                    const h = now.getHours();
+                    const m = now.getMinutes();
+                    label.textContent = I18N.t('currentTime');
+                    time.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    status.textContent = `${I18N.t('school')}: ${getDayName(nextSchool)} 08:00`;
+                } else {
+                    label.textContent = I18N.t('schoolStartsIn');
+                    time.textContent = formatCountdown(remaining);
+                    status.textContent = getDayName(nextSchool) + ' 08:00';
+                }
                 applyStateColor('after_school');
                 return;
             }
@@ -838,13 +894,23 @@
             const [firstStartH, firstStartM] = SCHEDULE[0].start.split(':').map(Number);
             const firstPeriodStart = firstStartH * 60 + firstStartM;
             if (currentMinutes < firstPeriodStart) {
-                const remaining = (firstPeriodStart - currentMinutes - 1) * 60 + (60 - currentSeconds);
-                const mins = Math.floor(remaining / 60);
-                const secs = remaining % 60;
+                const remainingSeconds = (firstPeriodStart - currentMinutes - 1) * 60 + (60 - currentSeconds);
+                const remainingMs = remainingSeconds * 1000;
 
-                label.textContent = I18N.t('schoolStartsIn');
-                time.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
-                status.textContent = I18N.formatPeriod(1) + ' ' + I18N.t('upcoming');
+                // If more than 2 hours until school, show current time instead
+                if (remainingMs > CLOCK_IDLE_HOURS * 60 * 60 * 1000) {
+                    const h = now.getHours();
+                    const m = now.getMinutes();
+                    label.textContent = I18N.t('currentTime');
+                    time.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                    status.textContent = `${I18N.t('school')}: ${getDayName(now)} 08:00`;
+                } else {
+                    const mins = Math.floor(remainingSeconds / 60);
+                    const secs = remainingSeconds % 60;
+                    label.textContent = I18N.t('schoolStartsIn');
+                    time.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+                    status.textContent = I18N.formatPeriod(1) + ' ' + I18N.t('upcoming');
+                }
                 applyStateColor('before_school');
                 return;
             }
@@ -894,9 +960,18 @@
             const nextSchool = getNextSchoolDay(now);
             const remaining = nextSchool - now;
 
-            label.textContent = I18N.t('schoolStartsIn');
-            time.textContent = formatCountdown(remaining);
-            status.textContent = getDayName(nextSchool) + ' 08:00';
+            // If more than 2 hours until school, show current time instead
+            if (remaining > CLOCK_IDLE_HOURS * 60 * 60 * 1000) {
+                const h = now.getHours();
+                const m = now.getMinutes();
+                label.textContent = I18N.t('currentTime');
+                time.textContent = `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`;
+                status.textContent = `${I18N.t('school')}: ${getDayName(nextSchool)} 08:00`;
+            } else {
+                label.textContent = I18N.t('schoolStartsIn');
+                time.textContent = formatCountdown(remaining);
+                status.textContent = getDayName(nextSchool) + ' 08:00';
+            }
             applyStateColor('after_school');
         }
 
@@ -1000,6 +1075,7 @@
             // Time-sensitive updates - faster in demo mode
             const slowInterval = DEMO_MODE ? 200 : 1000;
             setInterval(updateSubstitutionsVisibility, slowInterval);
+            setInterval(updateBusVisibility, slowInterval);
             setInterval(updateSleepScreen, slowInterval);
 
             // Substitutions filtering - check every 500ms in demo, 60s in real
@@ -1009,6 +1085,7 @@
             updateTopTimeline();
             updateMissionClock();
             updateSubstitutionsVisibility();
+            updateBusVisibility();
             updateSleepScreen();
         }
 
@@ -1016,9 +1093,14 @@
             try {
                 const res = await fetch('/api/articles');
                 articles = await res.json();
-                if (articles.length) render();
+                if (articles.length) {
+                    render();
+                } else {
+                    document.getElementById('newsScroll').innerHTML = '';
+                }
             } catch (e) {
                 console.error('Fetch error:', e);
+                document.getElementById('newsScroll').innerHTML = '';
             }
         }
 

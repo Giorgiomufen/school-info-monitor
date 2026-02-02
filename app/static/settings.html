@@ -433,6 +433,12 @@
                     <label class="field-label">Display Name</label>
                     <input type="text" id="busStopName" placeholder="Lepistiku">
                 </div>
+                <div class="field">
+                    <label class="field-label">Display Time Windows</label>
+                    <div class="field-desc">Panel only shows during these times</div>
+                    <div class="display-windows-list" id="busDisplayWindowsList"></div>
+                    <button type="button" class="btn btn-secondary" id="addBusDisplayWindow" style="margin-top: 10px;">+ Add Window</button>
+                </div>
             </section>
 
             <!-- Substitutions -->
@@ -545,6 +551,7 @@
         };
 
         let settings = {};
+        let settingsLoaded = false;
 
         // Helper to get nested value from settings
         function getNestedValue(obj, path) {
@@ -572,7 +579,7 @@
                     const el = document.getElementById(id);
                     const val = getNestedValue(settings, field.key);
                     if (field.type === 'checkbox') {
-                        el.checked = val !== false;
+                        el.checked = val === true;
                     } else if (field.type === 'select') {
                         el.value = val || 'en';
                     } else if (field.type === 'number') {
@@ -592,9 +599,15 @@
                 // Schedule
                 renderSchedule(settings.schedule || []);
 
-                // Display windows
-                const windows = (settings.substitutions || {}).display_windows || [{ start: '07:00', end: '10:00' }];
-                renderDisplayWindows(windows);
+                // Display windows for substitutions
+                const subWindows = (settings.substitutions || {}).display_windows || [{ start: '07:00', end: '10:00' }];
+                renderWindowList('displayWindowsList', subWindows, 'sub');
+
+                // Display windows for bus
+                const busWindows = settings.bus_display_windows || [{ start: '07:00', end: '16:00' }];
+                renderWindowList('busDisplayWindowsList', busWindows, 'bus');
+
+                settingsLoaded = true;
             } catch (e) {
                 toast('Failed to load settings', 'error');
             }
@@ -611,42 +624,44 @@
             `).join('');
         }
 
-        function renderDisplayWindows(windows) {
-            const list = document.getElementById('displayWindowsList');
+        // Generic window list functions
+        function renderWindowList(listId, windows, prefix) {
+            const list = document.getElementById(listId);
             list.innerHTML = windows.map((w, i) => `
-                <div class="window-row" data-index="${i}">
+                <div class="window-row" data-index="${i}" data-prefix="${prefix}">
                     <input type="time" class="window-start" value="${w.start}">
                     <span>-</span>
                     <input type="time" class="window-end" value="${w.end}">
-                    <button type="button" class="btn-remove" onclick="removeDisplayWindow(${i})">Remove</button>
+                    <button type="button" class="btn-remove" onclick="removeWindow('${listId}', ${i})">Remove</button>
                 </div>
             `).join('');
         }
 
-        function addDisplayWindow() {
-            const list = document.getElementById('displayWindowsList');
+        function addWindow(listId) {
+            const list = document.getElementById(listId);
             const count = list.querySelectorAll('.window-row').length;
             const newRow = document.createElement('div');
             newRow.className = 'window-row';
             newRow.dataset.index = count;
             newRow.innerHTML = `
-                <input type="time" class="window-start" value="07:00">
+                <input type="time" class="window-start" value="00:00">
                 <span>-</span>
-                <input type="time" class="window-end" value="10:00">
-                <button type="button" class="btn-remove" onclick="removeDisplayWindow(${count})">Remove</button>
+                <input type="time" class="window-end" value="23:59">
+                <button type="button" class="btn-remove" onclick="removeWindow('${listId}', ${count})">Remove</button>
             `;
             list.appendChild(newRow);
         }
 
-        function removeDisplayWindow(index) {
-            const list = document.getElementById('displayWindowsList');
+        function removeWindow(listId, index) {
+            const list = document.getElementById(listId);
             const rows = list.querySelectorAll('.window-row');
             if (rows.length > 1 && rows[index]) {
                 rows[index].remove();
             }
         }
 
-        document.getElementById('addDisplayWindow').addEventListener('click', addDisplayWindow);
+        document.getElementById('addDisplayWindow').addEventListener('click', () => addWindow('displayWindowsList'));
+        document.getElementById('addBusDisplayWindow').addEventListener('click', () => addWindow('busDisplayWindowsList'));
 
         async function save() {
             // Collect fields
@@ -678,13 +693,21 @@
                 name: `Period ${i + 1}`
             }));
 
-            // Collect display windows
-            const windowRows = document.querySelectorAll('#displayWindowsList .window-row');
+            // Collect display windows for substitutions
+            const subWindowRows = document.querySelectorAll('#displayWindowsList .window-row');
             settings.substitutions = settings.substitutions || {};
-            settings.substitutions.display_windows = Array.from(windowRows).map(row => ({
+            settings.substitutions.display_windows = Array.from(subWindowRows).map(row => ({
                 start: row.querySelector('.window-start').value,
                 end: row.querySelector('.window-end').value
             }));
+
+            // Collect display windows for bus
+            const busWindowRows = document.querySelectorAll('#busDisplayWindowsList .window-row');
+            settings.bus_display_windows = Array.from(busWindowRows).map(row => ({
+                start: row.querySelector('.window-start').value,
+                end: row.querySelector('.window-end').value
+            }));
+
 
             try {
                 const res = await fetch('/api/settings', {
@@ -720,6 +743,10 @@
         // Keyboard shortcut: S to save and go back to display
         document.addEventListener('keydown', async (e) => {
             if ((e.key === 's' || e.key === 'S') && !e.target.matches('input')) {
+                if (!settingsLoaded) {
+                    toast('Settings still loading...', 'error');
+                    return;
+                }
                 await save();
                 window.location.href = '/';
             }

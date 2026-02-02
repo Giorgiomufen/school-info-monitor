@@ -4,14 +4,16 @@ SpaceX-inspired info display for Tallinna Tehnikagümnaasium.
 
 ## Features
 
-- **News feed** - scraped from school website (ttg.edu.ee)
+- **News feed** - scraped from school website with images and descriptions
 - **Bus arrivals** - real-time from Tallinn transport API with destinations
-- **Mission clock** - countdown to next lesson/break
+- **Mission clock** - countdown to next lesson/break, shows current time when idle
 - **Timeline** - school day progress (08:00-15:45)
+- **Substitutions panel** - schedule changes from EduPage with filtering
 - **Settings page** - customizable via web UI
-- **Demo mode** - fast time simulation (60x speed)
+- **Demo mode** - fast time simulation for testing
 - **Color states** - lesson/break/before/after school
 - **Multi-language** - English and Estonian (i18n)
+- **Display windows** - show/hide panels during specific hours
 
 ## How to Run
 
@@ -28,8 +30,8 @@ school-info-monitor/
 │   ├── requirements.txt
 │   ├── run.bat              # Start (creates venv automatically)
 │   ├── stop.bat
+│   ├── settings.json        # User settings (auto-created)
 │   └── static/
-│       ├── display.html
 │       ├── settings.html
 │       └── i18n.js          # Internationalization module
 └── experiments/
@@ -48,9 +50,10 @@ school-info-monitor/
 Access via http://localhost:8000/settings or press `S`
 
 - Language (English / Eesti)
-- Demo mode toggle
-- Bus panel on/off
-- Bus stop ID/name
+- Demo mode toggle + speed
+- Display hours (auto sleep)
+- Bus panel on/off with display windows
+- Substitutions panel with filter modes
 - News URL
 - Colors for each state
 - Schedule times
@@ -61,6 +64,7 @@ Access via http://localhost:8000/settings or press `S`
 - `GET /settings` - settings page
 - `GET /api/articles` - news data
 - `GET /api/bus` - bus arrivals
+- `GET /api/substitutions` - schedule changes
 - `GET /api/settings` - current settings
 - `POST /api/settings` - update settings
 - `GET /api/schedule` - school schedule
@@ -72,12 +76,6 @@ To add a new language (e.g., Russian):
 1. In `app/static/i18n.js`, add to `languages`: `ru: { name: 'Russian', nativeName: 'Русский' }`
 2. Add a `ru: { ... }` translations object with all keys
 3. Add `<option value="ru">Русский</option>` to the language selector in `settings.html`
-
-## Roadmap
-
-- [ ] **Social media feed** - Instagram and Facebook integration to replace/supplement news scraping with more engaging, real-time content
-- [ ] **Event countdowns** - days until holidays, exams, school events
-- [ ] **Schedule changes** - room changes and cancellations (requires school system access)
 
 ---
 

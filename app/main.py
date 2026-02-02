@@ -38,23 +38,26 @@ ROUTE_DESTINATIONS = {
 
 # Default settings
 DEFAULT_SETTINGS = {
-    "language": "en",
+    "language": "et",
     "demo_mode": False,
     "demo_speed": 60,
     "display_hours": {
         "enabled": True,
-        "start": "06:00",
-        "end": "17:00"
+        "start": "00:00",
+        "end": "23:59"
     },
-    "bus_enabled": True,
-    "bus_stop_id": "02601-1",
-    "bus_stop_name": "Lepistiku",
+    "bus_enabled": False,
+    "bus_stop_id": "",
+    "bus_stop_name": "",
+    "bus_display_windows": [
+        {"start": "00:00", "end": "23:59"}
+    ],
     "news_url": "https://www.tallinn.ee/et/group/580/news?news_heading=20315",
     "colors": {
-        "lesson": "#ffffff",
-        "break": "#22c55e",
-        "before_school": "#3b82f6",
-        "after_school": "#6b7280"
+        "lesson": "#ff0000",
+        "break": "#00db50",
+        "before_school": "#333333",
+        "after_school": "#333333"
     },
     "schedule": [
         {"start": "08:00", "end": "08:45", "name": "Period 1"},
@@ -72,7 +75,7 @@ DEFAULT_SETTINGS = {
         "refresh_minutes": 15,
         "filter_mode": "upcoming",
         "display_windows": [
-            {"start": "07:00", "end": "10:00"}
+            {"start": "00:00", "end": "23:59"}
         ]
     }
 }
@@ -127,7 +130,11 @@ async def check_for_updates():
 async def scrape_news(force=False):
     """Scrape news articles from school website."""
     global articles
-    news_url = settings.get("news_url", DEFAULT_SETTINGS["news_url"])
+    news_url = settings.get("news_url") or DEFAULT_SETTINGS["news_url"]
+
+    # Skip if no URL configured
+    if not news_url or not news_url.startswith(("http://", "https://")):
+        return
 
     if force:
         async with httpx.AsyncClient() as client:

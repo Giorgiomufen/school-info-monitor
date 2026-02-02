@@ -19,6 +19,10 @@ const I18N = {
             inProgress: 'in progress',
             upcoming: 'upcoming',
 
+            // Current time display
+            currentTime: 'Current time',
+            school: 'School',
+
             // Loading states
             loadingSchedule: 'Loading schedule...',
             loading: 'Loading...',
@@ -93,6 +97,10 @@ const I18N = {
             schoolStartsIn: 'Kool algab',
             inProgress: 'k\u00e4ib',
             upcoming: 'tulemas',
+
+            // Current time display
+            currentTime: 'Praegune aeg',
+            school: 'Kool',
 
             // Loading states
             loadingSchedule: 'Laen tunniplaani...',
