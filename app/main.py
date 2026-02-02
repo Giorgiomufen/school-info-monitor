@@ -40,6 +40,7 @@ ROUTE_DESTINATIONS = {
 DEFAULT_SETTINGS = {
     "language": "en",
     "demo_mode": False,
+    "demo_speed": 60,
     "bus_enabled": True,
     "bus_stop_id": "02601-1",
     "bus_stop_name": "Lepistiku",
@@ -64,6 +65,7 @@ DEFAULT_SETTINGS = {
         "enabled": True,
         "url": "https://ttg.edupage.org/substitution/",
         "refresh_minutes": 15,
+        "filter_mode": "upcoming",
         "display_windows": [
             {"start": "07:00", "end": "10:00"}
         ]

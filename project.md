@@ -18,9 +18,13 @@ A display screen for Tallinna Tehnikagümnaasium inspired by SpaceX design. Show
 - Bus arrivals from Tallinn transport API with destinations
 - Mission clock countdown to next lesson/break
 - Timeline showing school day progress
+- Substitutions panel (EduPage scraping) with time-based filtering
+  - Filter modes: all, upcoming only, next lesson only
+  - Display time windows (show panel only during certain hours)
 - Settings page with customization options
-- Demo mode with fast time simulation
+- Demo mode with adjustable speed for testing
 - Color-coded states (lesson/break/before/after school)
+- i18n support (English, Estonian)
 
 ## Tech
 
@@ -76,12 +80,12 @@ If I come back with clarity, maybe continue. If not, that's okay too.
 
 
 
-Update 2-2-2026:
-  1. Social media feed - If your school has Instagram, embed it. Content is always fresh, maintained by someone else,
-  and students actually engage with it. Shows school life, events, photos.                                                
-  2. Countdown to next holiday/event - "Winter break in 12 days" or "Prom in 34 days" - dead simple, universal interest,   glanceable.                                                                                                            
-  3. Student achievements / spotlights - Competition results, student of the month, notable projects. Students like
-  seeing names. Builds pride.
-  4. Upcoming sports games - "Friday 18:00 - Basketball vs [School]" - school spirit, relevant to many students.
-  5. Club meeting reminders - "Today: Robotics 15:00 Room 204" - actionable for students involved.
-  6. Daily trivia question - Display a question in the morning, answer in the afternoon. Simple engagement hook.
+## Future ideas
+
+- Social media feed (Instagram embed)
+- Countdown to next holiday/event
+- Student achievements / spotlights
+- Sports games schedule
+- Club meeting reminders
+- Display time windows for entire screen (auto on/off)
+- Bus panel display time windows 

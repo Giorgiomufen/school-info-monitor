@@ -456,6 +456,7 @@
         let SUBSTITUTIONS_CONFIG = {
             enabled: true,
             refresh_minutes: 15,
+            filter_mode: 'upcoming',
             display_windows: [{ start: '07:00', end: '10:00' }]
         };
 
@@ -480,7 +481,7 @@
             before_school: '#3b82f6',
             after_school: '#6b7280'
         };
-        const DEMO_SPEED = 60; // 1 second = 1 minute in demo
+        let DEMO_SPEED = 60;
 
         function getDemoTime() {
             if (!DEMO_MODE || !demoTime) return new Date();
@@ -496,13 +497,16 @@
                 demoTime.setDate(demoTime.getDate() + 1);
             }
 
+            // Smooth updates at 20fps, DEMO_SPEED = how many seconds pass per real second
+            const FPS = 20;
+            const msPerTick = 1000 / FPS;
             setInterval(() => {
-                demoTime.setSeconds(demoTime.getSeconds() + DEMO_SPEED);
+                demoTime.setTime(demoTime.getTime() + DEMO_SPEED * msPerTick);
                 // Reset at end of day
                 if (demoTime.getHours() >= 16) {
                     demoTime.setHours(7, 55, 0, 0);
                 }
-            }, 1000);
+            }, msPerTick);
         }
 
         // Load settings from API
@@ -517,16 +521,18 @@
 
                 SCHEDULE = settings.schedule || SCHEDULE;
                 DEMO_MODE = settings.demo_mode === true;
+                DEMO_SPEED = settings.demo_speed || 60;
                 if (settings.colors) {
                     COLORS = { ...COLORS, ...settings.colors };
                 }
 
                 if (DEMO_MODE) {
                     startDemoTime();
-                    console.log('Demo mode enabled - time runs at ' + DEMO_SPEED + 'x speed');
+                    console.log('Demo mode: ' + DEMO_SPEED + 'x');
                 }
 
                 initTopTimeline();
+                startUIUpdates();
 
                 // Update bus stop name
                 document.querySelector('.bus-header').textContent = settings.bus_stop_name || 'Bus Stop';
@@ -576,13 +582,42 @@
         let itemHeight = 0;
 
         // === SUBSTITUTIONS ===
+        function isPeriodEnded(periodNum) {
+            const now = getDemoTime();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+
+            // Find the period in schedule
+            const period = SCHEDULE[periodNum - 1];
+            if (!period) return false;
+
+            const [endH, endM] = period.end.split(':').map(Number);
+            const endMin = endH * 60 + endM;
+
+            return currentMin > endMin;
+        }
+
+        function getNextPeriod() {
+            const now = getDemoTime();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+
+            for (let i = 0; i < SCHEDULE.length; i++) {
+                const [endH, endM] = SCHEDULE[i].end.split(':').map(Number);
+                const endMin = endH * 60 + endM;
+                if (currentMin <= endMin) return i + 1; // Period numbers are 1-based
+            }
+            return null; // All periods ended
+        }
+
+        // Store raw substitutions for re-filtering
+        let rawSubstitutions = [];
+
         async function fetchSubstitutions() {
             if (!SUBSTITUTIONS_CONFIG.enabled) return;
 
             try {
                 const res = await fetch('/api/substitutions');
-                const subs = await res.json();
-                renderSubstitutions(subs);
+                rawSubstitutions = await res.json();
+                renderSubstitutions(rawSubstitutions);
             } catch (e) {
                 console.error('Substitutions error:', e);
             }
@@ -590,13 +625,24 @@
 
         function renderSubstitutions(subs) {
             const list = document.getElementById('substitutionsList');
+            const filterMode = SUBSTITUTIONS_CONFIG.filter_mode || 'upcoming';
 
-            if (!subs || !subs.length) {
+            // Filter based on mode
+            let filtered = subs || [];
+            if (filterMode === 'upcoming') {
+                filtered = filtered.filter(s => !isPeriodEnded(s.period));
+            } else if (filterMode === 'next') {
+                const nextPeriod = getNextPeriod();
+                filtered = nextPeriod ? filtered.filter(s => s.period === nextPeriod) : [];
+            }
+            // filterMode === 'all' shows everything
+
+            if (!filtered.length) {
                 list.innerHTML = `<div class="substitutions-empty">${I18N.t('noSubstitutions')}</div>`;
                 return;
             }
 
-            list.innerHTML = subs.map(s => `
+            list.innerHTML = filtered.map(s => `
                 <div class="substitutions-item ${s.type}">
                     <div class="class-info">${s.period}. ${s.class || ''}: ${s.subject}</div>
                     <div class="details">${s.status}${s.room ? ' \u2022 ' + s.room : ''}</div>
@@ -906,12 +952,14 @@
             });
         }
 
-        initTopTimeline();
-        setInterval(updateTopTimeline, 1000);
-        updateTopTimeline();
-
-        setInterval(updateMissionClock, 1000);
-        updateMissionClock();
+        // Update UI - faster in demo mode for smooth animation
+        function startUIUpdates() {
+            const interval = DEMO_MODE ? 50 : 1000;
+            setInterval(updateTopTimeline, interval);
+            setInterval(updateMissionClock, interval);
+            updateTopTimeline();
+            updateMissionClock();
+        }
 
         async function fetchArticles() {
             try {
@@ -1019,6 +1067,8 @@
         setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);
         setInterval(updateSubstitutionsVisibility, 1000);
         setInterval(autoScrollSubstitutions, SUBS_SCROLL_PAUSE);
+        // Re-render substitutions every minute to update time-based filtering
+        setInterval(() => renderSubstitutions(rawSubstitutions), 60 * 1000);
         updateSubstitutionsVisibility();
     </script>
 </body>
