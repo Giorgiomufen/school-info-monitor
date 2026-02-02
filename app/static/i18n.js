@@ -28,6 +28,7 @@ const I18N = {
             loading: 'Loading...',
 
             // Bus panel
+            busStop: 'Bus Stop',
             noBuses: 'No buses',
 
             // Transport types
@@ -88,11 +89,14 @@ const I18N = {
             noUpcomingSubstitutions: 'No upcoming changes',
             noNextSubstitutions: 'No changes for next lesson',
             cancelled: 'Cancelled',
-            roomChange: 'Room change'
+            roomChange: 'Room change',
+
+            // Credit
+            credit: 'Program made by Giorgio G. Lelmi'
         },
         et: {
             // Mission clock labels
-            breakIn: 'Vahetund',
+            breakIn: 'Vahetunnini',
             lessonStartsIn: 'Tund algab',
             schoolStartsIn: 'Kool algab',
             inProgress: 'k\u00e4ib',
@@ -107,6 +111,7 @@ const I18N = {
             loading: 'Laen...',
 
             // Bus panel
+            busStop: 'Bussipeatus',
             noBuses: 'Busse pole',
 
             // Transport types
@@ -166,8 +171,11 @@ const I18N = {
             noSubstitutions: 'T\u00e4na muudatusi pole',
             noUpcomingSubstitutions: 'Eelseisvaid muudatusi pole',
             noNextSubstitutions: 'J\u00e4rgmises tunnis muudatusi pole',
-            cancelled: 'T\u00fchistatud',
-            roomChange: 'Ruumi vahetus'
+            cancelled: 'Tühistatud',
+            roomChange: 'Ruumi vahetus',
+
+            // Credit
+            credit: 'Programmi autor Giorgio G. Lelmi'
         }
     },
 

@@ -78,8 +78,7 @@ DEFAULT_SETTINGS = {
             {"start": "00:00", "end": "23:59"}
         ]
     },
-    "show_credit": True,
-    "credit_text": "Made by Giorgio Giancarlo Lelmi"
+    "show_credit": True
 }
 
 def load_settings():

@@ -343,6 +343,14 @@
             border-color: #ef4444;
             color: #ef4444;
         }
+
+        .credit {
+            margin-top: 60px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+        }
     </style>
 </head>
 <body>
@@ -398,16 +406,12 @@
                 <div class="field-row">
                     <div class="field-info">
                         <div class="field-label">Show Credit</div>
-                        <div class="field-desc">Display creator credit on screen</div>
+                        <div class="field-desc">Display "Program made by Giorgio G. Lelmi"</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="showCredit">
                         <span class="toggle-slider"></span>
                     </label>
-                </div>
-                <div class="field">
-                    <label class="field-label">Credit Text</label>
-                    <input type="text" id="creditText" placeholder="Made by Giorgio Giancarlo Lelmi">
                 </div>
             </section>
 
@@ -534,6 +538,8 @@
                 <button class="btn btn-primary" onclick="save()">Save Changes</button>
                 <button class="btn btn-secondary" onclick="load()">Discard</button>
             </div>
+
+            <div class="credit">Program made by Giorgio Giancarlo Lelmi</div>
         </main>
     </div>
 
@@ -556,7 +562,6 @@
             substitutionsRefresh: { type: 'number', key: 'substitutions.refresh_minutes' },
             substitutionsFilterMode: { type: 'select', key: 'substitutions.filter_mode' },
             showCredit: { type: 'checkbox', key: 'show_credit' },
-            creditText: { type: 'text', key: 'credit_text' },
         };
 
         const colorFields = {

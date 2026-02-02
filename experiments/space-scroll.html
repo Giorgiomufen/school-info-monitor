@@ -406,7 +406,7 @@
         .credit {
             position: fixed;
             bottom: 20px;
-            left: 40px;
+            right: 40px;
             font-size: 0.75rem;
             text-transform: uppercase;
             letter-spacing: 2px;
@@ -576,7 +576,7 @@
                 startUIUpdates();
 
                 // Update bus stop name
-                document.getElementById('busHeader').textContent = settings.bus_stop_name || 'Bus Stop';
+                document.getElementById('busHeader').textContent = settings.bus_stop_name || I18N.t('busStop');
 
                 // Load bus config
                 BUS_ENABLED = settings.bus_enabled !== false;
@@ -601,13 +601,11 @@
 
                 // Load credit
                 const creditEl = document.getElementById('credit');
-                if (settings.show_credit !== false && settings.credit_text) {
-                    creditEl.textContent = settings.credit_text;
+                if (settings.show_credit !== false) {
+                    creditEl.textContent = I18N.t('credit');
                     creditEl.style.display = '';
-                } else if (settings.show_credit === false) {
-                    creditEl.style.display = 'none';
                 } else {
-                    creditEl.textContent = 'Made by Giorgio Giancarlo Lelmi';
+                    creditEl.style.display = 'none';
                 }
             } catch (e) {
                 console.error('Failed to load settings');
