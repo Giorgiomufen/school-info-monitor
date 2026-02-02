@@ -8,6 +8,7 @@ import asyncio
 import hashlib
 import json
 import os
+import re
 import httpx
 from bs4 import BeautifulSoup
 from fastapi import FastAPI, Request
@@ -58,7 +59,15 @@ DEFAULT_SETTINGS = {
         {"start": "13:15", "end": "14:00", "name": "Period 6"},
         {"start": "14:10", "end": "14:55", "name": "Period 7"},
         {"start": "15:00", "end": "15:45", "name": "Period 8"},
-    ]
+    ],
+    "substitutions": {
+        "enabled": True,
+        "url": "https://ttg.edupage.org/substitution/",
+        "refresh_minutes": 15,
+        "display_windows": [
+            {"start": "07:00", "end": "10:00"}
+        ]
+    }
 }
 
 def load_settings():
@@ -77,6 +86,7 @@ settings = load_settings()
 articles = []
 last_content_hash = None
 bus_arrivals = []
+substitutions = []
 
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -252,6 +262,111 @@ async def fetch_bus_arrivals():
         print(f"Bus error: {e}")
 
 
+# === SUBSTITUTIONS SCRAPER ===
+async def fetch_substitutions():
+    """Scrape substitutions from EduPage."""
+    global substitutions
+
+    sub_settings = settings.get("substitutions", {})
+    if not sub_settings.get("enabled", True):
+        substitutions = []
+        return
+
+    url = sub_settings.get("url") or "https://ttg.edupage.org/substitution/"
+    if not url.startswith("http"):
+        print("Substitutions: invalid URL")
+        return
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.get(url, timeout=10.0)
+            html = response.text
+
+            items = []
+            current_teacher = None
+
+            # EduPage embeds data in JavaScript - look for report_html in script
+            # The data is HTML-encoded in a React component prop
+            report_match = re.search(r'report_html["\']?\s*:\s*["\'](.+?)["\'](?:,|\})', html, re.DOTALL)
+
+            if report_match:
+                # Decode the embedded HTML (it's escaped)
+                embedded_html = report_match.group(1)
+                # Unescape common HTML entities and unicode escapes
+                embedded_html = embedded_html.replace('\\u003c', '<').replace('\\u003e', '>')
+                embedded_html = embedded_html.replace('\\u0026', '&').replace('\\/', '/')
+                embedded_html = embedded_html.replace('\\"', '"').replace("\\'", "'")
+                embedded_html = embedded_html.replace('\\n', '\n').replace('\\t', '\t')
+
+                soup = BeautifulSoup(embedded_html, 'html.parser')
+            else:
+                # Fallback: try parsing the page directly
+                soup = BeautifulSoup(html, 'html.parser')
+
+            # Find all table rows in the substitution table
+            for row in soup.select('tbody.print-nobreak tr, tr'):
+                # Check for teacher header
+                header = row.select_one('td.header')
+                if header:
+                    current_teacher = header.get_text(strip=True)
+
+                # Get period, class/subject, and status
+                period_el = row.select_one('td.period span') or row.select_one('td.period')
+                what_el = row.select_one('td.what span') or row.select_one('td.what')
+                info_el = row.select_one('td.info span') or row.select_one('td.info')
+
+                if period_el and what_el and info_el:
+                    period_text = period_el.get_text(strip=True)
+                    # Clean up period: remove dots and parentheses like "(2.)" -> "2"
+                    period_text = period_text.strip('().').strip()
+                    what_text = what_el.get_text(strip=True)
+                    info_text = info_el.get_text(strip=True)
+
+                    # Skip empty rows
+                    if not period_text or not what_text:
+                        continue
+
+                    # Parse class and subject from "8B: Subject"
+                    class_name = ""
+                    subject = what_text
+                    if ':' in what_text:
+                        parts = what_text.split(':', 1)
+                        class_name = parts[0].strip()
+                        subject = parts[1].strip() if len(parts) > 1 else ""
+
+                    # Determine type from status
+                    sub_type = "substitute"
+                    if "Tühistatud" in info_text or "Cancelled" in info_text:
+                        sub_type = "cancelled"
+                    elif "Lisatud" in info_text or "Added" in info_text:
+                        sub_type = "added"
+                    elif "Ruum" in info_text or "Room" in info_text:
+                        sub_type = "room_change"
+
+                    # Extract room if present
+                    room = None
+                    if "Ruum:" in info_text:
+                        room = info_text.split("Ruum:")[-1].strip().split(',')[0].strip()
+                    elif "Room:" in info_text:
+                        room = info_text.split("Room:")[-1].strip().split(',')[0].strip()
+
+                    items.append({
+                        "teacher": current_teacher,
+                        "period": int(period_text) if period_text.isdigit() else period_text,
+                        "class": class_name,
+                        "subject": subject,
+                        "type": sub_type,
+                        "status": info_text,
+                        "room": room
+                    })
+
+            substitutions = items
+            print(f"Substitutions: {len(substitutions)}")
+
+    except Exception as e:
+        print(f"Substitutions fetch error: {e}")
+
+
 # === ROUTES ===
 @app.get("/")
 async def root():
@@ -271,6 +386,11 @@ async def get_articles():
 @app.get("/api/bus")
 async def get_bus():
     return bus_arrivals
+
+
+@app.get("/api/substitutions")
+async def get_substitutions():
+    return substitutions
 
 
 @app.get("/api/settings")
@@ -307,12 +427,24 @@ async def bus_loop():
         await asyncio.sleep(60)  # Every minute
 
 
+async def substitutions_loop():
+    """Periodically fetch substitutions."""
+    while True:
+        sub_settings = settings.get("substitutions", {})
+        if sub_settings.get("enabled", True):
+            await fetch_substitutions()
+        interval = sub_settings.get("refresh_minutes", 15) or 15
+        await asyncio.sleep(interval * 60)
+
+
 @app.on_event("startup")
 async def startup():
     await scrape_news(force=True)
     await fetch_bus_arrivals()
+    await fetch_substitutions()
     asyncio.create_task(news_loop())
     asyncio.create_task(bus_loop())
+    asyncio.create_task(substitutions_loop())
     print(f"\n  Slideshow: http://localhost:{PORT}/\n")
 
 

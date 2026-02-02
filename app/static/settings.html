@@ -126,6 +126,7 @@
         input[type="text"],
         input[type="url"],
         input[type="time"],
+        input[type="number"],
         select {
             width: 100%;
             padding: 10px 12px;
@@ -304,34 +305,71 @@
             cursor: pointer;
             background: transparent;
         }
+
+        /* Display windows */
+        .display-windows-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .window-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .window-row input[type="time"] {
+            width: 120px;
+        }
+
+        .window-row span {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        .btn-remove {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-remove:hover {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
     </style>
 </head>
 <body>
-    <a href="/" class="back-link" data-i18n="backToDisplay">\u2190 Display</a>
-
-    <script src="/static/i18n.js"></script>
+    <a href="/" class="back-link">&larr; Display</a>
 
     <div class="layout">
         <nav class="sidebar">
-            <div class="sidebar-title" data-i18n="settings">Settings</div>
-            <a href="#general" class="nav-item active" data-i18n="general">General</a>
-            <a href="#language" class="nav-item" data-i18n="language">Language</a>
-            <a href="#bus" class="nav-item" data-i18n="busArrivals">Bus Arrivals</a>
-            <a href="#news" class="nav-item" data-i18n="newsFeed">News Feed</a>
-            <a href="#colors" class="nav-item" data-i18n="colors">Colors</a>
-            <a href="#schedule" class="nav-item" data-i18n="schedule">Schedule</a>
+            <div class="sidebar-title">Settings</div>
+            <a href="#general" class="nav-item active">General</a>
+            <a href="#language" class="nav-item">Language</a>
+            <a href="#bus" class="nav-item">Bus Arrivals</a>
+            <a href="#substitutions" class="nav-item">Substitutions</a>
+            <a href="#news" class="nav-item">News Feed</a>
+            <a href="#colors" class="nav-item">Colors</a>
+            <a href="#schedule" class="nav-item">Schedule</a>
         </nav>
 
         <main class="main">
-            <h1 class="page-title" data-i18n="displaySettings">Display Settings</h1>
+            <h1 class="page-title">Display Settings</h1>
 
             <!-- General -->
             <section class="section" id="general">
-                <h2 class="section-title" data-i18n="general">General</h2>
+                <h2 class="section-title">General</h2>
                 <div class="field-row">
                     <div class="field-info">
-                        <div class="field-label" data-i18n="demoMode">Demo Mode</div>
-                        <div class="field-desc" data-i18n="demoModeDesc">Use fake data for testing</div>
+                        <div class="field-label">Demo Mode</div>
+                        <div class="field-desc">Use fake data for testing</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="demoMode">
@@ -342,10 +380,11 @@
 
             <!-- Language -->
             <section class="section" id="language">
-                <h2 class="section-title" data-i18n="language">Language</h2>
+                <h2 class="section-title">Language</h2>
                 <div class="field-row">
                     <div class="field-info">
-                        <div class="field-label">Language / Keel</div>
+                        <div class="field-label">Display Language</div>
+                        <div class="field-desc">Language shown on the main display</div>
                     </div>
                     <select id="languageSelect">
                         <option value="en">English</option>
@@ -356,11 +395,11 @@
 
             <!-- Bus -->
             <section class="section" id="bus">
-                <h2 class="section-title" data-i18n="busArrivals">Bus Arrivals</h2>
+                <h2 class="section-title">Bus Arrivals</h2>
                 <div class="field-row">
                     <div class="field-info">
-                        <div class="field-label" data-i18n="showBusPanel">Show Bus Panel</div>
-                        <div class="field-desc" data-i18n="showBusPanelDesc">Display real-time bus arrivals</div>
+                        <div class="field-label">Show Bus Panel</div>
+                        <div class="field-desc">Display real-time bus arrivals</div>
                     </div>
                     <label class="toggle">
                         <input type="checkbox" id="busEnabled">
@@ -368,42 +407,71 @@
                     </label>
                 </div>
                 <div class="field">
-                    <label class="field-label" data-i18n="stopId">Stop ID</label>
+                    <label class="field-label">Stop ID</label>
                     <input type="text" id="busStopId" placeholder="02601-1">
                 </div>
                 <div class="field">
-                    <label class="field-label" data-i18n="displayName">Display Name</label>
+                    <label class="field-label">Display Name</label>
                     <input type="text" id="busStopName" placeholder="Lepistiku">
+                </div>
+            </section>
+
+            <!-- Substitutions -->
+            <section class="section" id="substitutions">
+                <h2 class="section-title">Substitutions</h2>
+                <div class="field-row">
+                    <div class="field-info">
+                        <div class="field-label">Show Substitutions</div>
+                        <div class="field-desc">Display schedule changes panel</div>
+                    </div>
+                    <label class="toggle">
+                        <input type="checkbox" id="substitutionsEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                </div>
+                <div class="field">
+                    <label class="field-label">Source URL</label>
+                    <input type="url" id="substitutionsUrl" placeholder="https://ttg.edupage.org/substitution/">
+                </div>
+                <div class="field">
+                    <label class="field-label">Refresh Interval (minutes)</label>
+                    <input type="number" id="substitutionsRefresh" min="1" max="60" value="15">
+                </div>
+                <div class="field">
+                    <label class="field-label">Display Time Windows</label>
+                    <div class="field-desc">Panel only shows during these times</div>
+                    <div class="display-windows-list" id="displayWindowsList"></div>
+                    <button type="button" class="btn btn-secondary" id="addDisplayWindow" style="margin-top: 10px;">+ Add Window</button>
                 </div>
             </section>
 
             <!-- News -->
             <section class="section" id="news">
-                <h2 class="section-title" data-i18n="newsFeed">News Feed</h2>
+                <h2 class="section-title">News Feed</h2>
                 <div class="field">
-                    <label class="field-label" data-i18n="newsUrl">News URL</label>
+                    <label class="field-label">News URL</label>
                     <input type="url" id="newsUrl" placeholder="https://...">
                 </div>
             </section>
 
             <!-- Colors -->
             <section class="section" id="colors">
-                <h2 class="section-title" data-i18n="colors">Colors</h2>
+                <h2 class="section-title">Colors</h2>
                 <div class="color-grid">
                     <div class="color-field">
-                        <label data-i18n="duringLesson">During Lesson</label>
+                        <label>During Lesson</label>
                         <input type="color" id="colorLesson" value="#ffffff">
                     </div>
                     <div class="color-field">
-                        <label data-i18n="duringBreak">During Break</label>
+                        <label>During Break</label>
                         <input type="color" id="colorBreak" value="#22c55e">
                     </div>
                     <div class="color-field">
-                        <label data-i18n="beforeSchool">Before School</label>
+                        <label>Before School</label>
                         <input type="color" id="colorBeforeSchool" value="#3b82f6">
                     </div>
                     <div class="color-field">
-                        <label data-i18n="afterSchool">After School</label>
+                        <label>After School</label>
                         <input type="color" id="colorAfterSchool" value="#6b7280">
                     </div>
                 </div>
@@ -411,13 +479,13 @@
 
             <!-- Schedule -->
             <section class="section" id="schedule">
-                <h2 class="section-title" data-i18n="schedule">Schedule</h2>
+                <h2 class="section-title">Schedule</h2>
                 <div class="schedule-list" id="scheduleList"></div>
             </section>
 
             <div class="actions">
-                <button class="btn btn-primary" onclick="save()" data-i18n="saveChanges">Save Changes</button>
-                <button class="btn btn-secondary" onclick="load()" data-i18n="discard">Discard</button>
+                <button class="btn btn-primary" onclick="save()">Save Changes</button>
+                <button class="btn btn-secondary" onclick="load()">Discard</button>
             </div>
         </main>
     </div>
@@ -432,6 +500,9 @@
             busStopId: { type: 'text', key: 'bus_stop_id' },
             busStopName: { type: 'text', key: 'bus_stop_name' },
             newsUrl: { type: 'text', key: 'news_url' },
+            substitutionsEnabled: { type: 'checkbox', key: 'substitutions.enabled' },
+            substitutionsUrl: { type: 'text', key: 'substitutions.url' },
+            substitutionsRefresh: { type: 'number', key: 'substitutions.refresh_minutes' },
         };
 
         const colorFields = {
@@ -443,24 +514,39 @@
 
         let settings = {};
 
+        // Helper to get nested value from settings
+        function getNestedValue(obj, path) {
+            return path.split('.').reduce((o, k) => (o || {})[k], obj);
+        }
+
+        // Helper to set nested value in settings
+        function setNestedValue(obj, path, value) {
+            const keys = path.split('.');
+            const last = keys.pop();
+            const target = keys.reduce((o, k) => {
+                if (!o[k]) o[k] = {};
+                return o[k];
+            }, obj);
+            target[last] = value;
+        }
+
         async function load() {
             try {
                 const res = await fetch('/api/settings');
                 settings = await res.json();
 
-                // Initialize i18n and apply translations
-                I18N.init(settings.language || 'en');
-                applyTranslations();
-
                 // Populate fields
                 for (const [id, field] of Object.entries(fields)) {
                     const el = document.getElementById(id);
+                    const val = getNestedValue(settings, field.key);
                     if (field.type === 'checkbox') {
-                        el.checked = settings[field.key] !== false;
+                        el.checked = val !== false;
                     } else if (field.type === 'select') {
-                        el.value = settings[field.key] || 'en';
+                        el.value = val || 'en';
+                    } else if (field.type === 'number') {
+                        el.value = val || '';
                     } else {
-                        el.value = settings[field.key] || '';
+                        el.value = val || '';
                     }
                 }
 
@@ -473,53 +559,76 @@
 
                 // Schedule
                 renderSchedule(settings.schedule || []);
+
+                // Display windows
+                const windows = (settings.substitutions || {}).display_windows || [{ start: '07:00', end: '10:00' }];
+                renderDisplayWindows(windows);
             } catch (e) {
-                toast(I18N.t('failedToLoad'), 'error');
+                toast('Failed to load settings', 'error');
             }
         }
-
-        // Apply translations to all elements with data-i18n attribute
-        function applyTranslations() {
-            document.querySelectorAll('[data-i18n]').forEach(el => {
-                const key = el.getAttribute('data-i18n');
-                const translated = I18N.t(key);
-                if (el.tagName === 'A' && el.classList.contains('back-link')) {
-                    el.textContent = '\u2190 ' + translated;
-                } else {
-                    el.textContent = translated;
-                }
-            });
-        }
-
-        // Re-apply translations when language changes
-        document.getElementById('languageSelect').addEventListener('change', function() {
-            I18N.init(this.value);
-            applyTranslations();
-            renderSchedule(settings.schedule || []);
-        });
 
         function renderSchedule(schedule) {
             const list = document.getElementById('scheduleList');
             list.innerHTML = schedule.map((p, i) => `
                 <div class="schedule-row">
-                    <span>${I18N.formatPeriod(i + 1)}</span>
+                    <span>Period ${i + 1}</span>
                     <input type="time" id="start${i}" value="${p.start}">
                     <input type="time" id="end${i}" value="${p.end}">
                 </div>
             `).join('');
         }
 
+        function renderDisplayWindows(windows) {
+            const list = document.getElementById('displayWindowsList');
+            list.innerHTML = windows.map((w, i) => `
+                <div class="window-row" data-index="${i}">
+                    <input type="time" class="window-start" value="${w.start}">
+                    <span>-</span>
+                    <input type="time" class="window-end" value="${w.end}">
+                    <button type="button" class="btn-remove" onclick="removeDisplayWindow(${i})">Remove</button>
+                </div>
+            `).join('');
+        }
+
+        function addDisplayWindow() {
+            const list = document.getElementById('displayWindowsList');
+            const count = list.querySelectorAll('.window-row').length;
+            const newRow = document.createElement('div');
+            newRow.className = 'window-row';
+            newRow.dataset.index = count;
+            newRow.innerHTML = `
+                <input type="time" class="window-start" value="07:00">
+                <span>-</span>
+                <input type="time" class="window-end" value="10:00">
+                <button type="button" class="btn-remove" onclick="removeDisplayWindow(${count})">Remove</button>
+            `;
+            list.appendChild(newRow);
+        }
+
+        function removeDisplayWindow(index) {
+            const list = document.getElementById('displayWindowsList');
+            const rows = list.querySelectorAll('.window-row');
+            if (rows.length > 1 && rows[index]) {
+                rows[index].remove();
+            }
+        }
+
+        document.getElementById('addDisplayWindow').addEventListener('click', addDisplayWindow);
+
         async function save() {
             // Collect fields
             for (const [id, field] of Object.entries(fields)) {
                 const el = document.getElementById(id);
+                let value;
                 if (field.type === 'checkbox') {
-                    settings[field.key] = el.checked;
-                } else if (field.type === 'select') {
-                    settings[field.key] = el.value;
+                    value = el.checked;
+                } else if (field.type === 'number') {
+                    value = parseInt(el.value, 10) || 0;
                 } else {
-                    settings[field.key] = el.value;
+                    value = el.value;
                 }
+                setNestedValue(settings, field.key, value);
             }
 
             // Collect colors
@@ -530,11 +639,19 @@
             }
 
             // Collect schedule
-            const rows = document.querySelectorAll('.schedule-row');
-            settings.schedule = Array.from(rows).map((row, i) => ({
+            const scheduleRows = document.querySelectorAll('.schedule-row');
+            settings.schedule = Array.from(scheduleRows).map((row, i) => ({
                 start: row.querySelector(`#start${i}`).value,
                 end: row.querySelector(`#end${i}`).value,
                 name: `Period ${i + 1}`
+            }));
+
+            // Collect display windows
+            const windowRows = document.querySelectorAll('#displayWindowsList .window-row');
+            settings.substitutions = settings.substitutions || {};
+            settings.substitutions.display_windows = Array.from(windowRows).map(row => ({
+                start: row.querySelector('.window-start').value,
+                end: row.querySelector('.window-end').value
             }));
 
             try {
@@ -544,12 +661,12 @@
                     body: JSON.stringify(settings)
                 });
                 if (res.ok) {
-                    toast(I18N.t('settingsSaved'), 'success');
+                    toast('Settings saved', 'success');
                 } else {
-                    toast(I18N.t('failedToSave'), 'error');
+                    toast('Failed to save', 'error');
                 }
             } catch (e) {
-                toast(I18N.t('failedToSave'), 'error');
+                toast('Failed to save', 'error');
             }
         }
 

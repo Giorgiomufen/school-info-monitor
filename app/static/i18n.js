@@ -70,7 +70,19 @@ const I18N = {
             // Toast messages
             settingsSaved: 'Settings saved',
             failedToLoad: 'Failed to load settings',
-            failedToSave: 'Failed to save'
+            failedToSave: 'Failed to save',
+
+            // Substitutions
+            substitutions: 'Substitutions',
+            substitutionsEnabled: 'Show Substitutions',
+            substitutionsEnabledDesc: 'Display schedule changes panel',
+            substitutionsUrl: 'Source URL',
+            substitutionsRefresh: 'Refresh Interval (minutes)',
+            displayWindows: 'Display Time Windows',
+            displayWindowsDesc: 'Panel only shows during these times',
+            noSubstitutions: 'No changes today',
+            cancelled: 'Cancelled',
+            roomChange: 'Room change'
         },
         et: {
             // Mission clock labels
@@ -131,7 +143,19 @@ const I18N = {
             // Toast messages
             settingsSaved: 'Seaded salvestatud',
             failedToLoad: 'Seadete laadimine eba\u00f5nnestus',
-            failedToSave: 'Salvestamine eba\u00f5nnestus'
+            failedToSave: 'Salvestamine eba\u00f5nnestus',
+
+            // Substitutions
+            substitutions: 'Asendused',
+            substitutionsEnabled: 'N\u00e4ita asendusi',
+            substitutionsEnabledDesc: 'Kuva tunniplaani muudatuste paneel',
+            substitutionsUrl: 'Allika URL',
+            substitutionsRefresh: 'V\u00e4rskendamise intervall (minutites)',
+            displayWindows: 'Kuvamise ajaaknad',
+            displayWindowsDesc: 'Paneel kuvatakse ainult nendel aegadel',
+            noSubstitutions: 'T\u00e4na muudatusi pole',
+            cancelled: 'T\u00fchistatud',
+            roomChange: 'Ruumi vahetus'
         }
     },
 

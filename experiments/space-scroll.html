@@ -301,6 +301,85 @@
             padding: 20px 0;
         }
 
+        /* Substitutions panel */
+        .substitutions-panel {
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            padding: 20px;
+            flex: 1;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .substitutions-scroll-container {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .substitutions-list {
+            transition: transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .substitutions-header {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            opacity: 0.5;
+            margin-bottom: 15px;
+        }
+
+        .substitutions-item {
+            padding: 10px;
+            margin-bottom: 8px;
+            background: rgba(255,100,100,0.1);
+            border-left: 3px solid rgba(255,100,100,0.6);
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .substitutions-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .substitutions-item.cancelled {
+            border-left-color: #ef4444;
+            background: rgba(239,68,68,0.1);
+        }
+
+        .substitutions-item.added {
+            border-left-color: #22c55e;
+            background: rgba(34,197,94,0.1);
+        }
+
+        .substitutions-item.room_change {
+            border-left-color: #eab308;
+            background: rgba(234,179,8,0.1);
+        }
+
+        .substitutions-item.substitute {
+            border-left-color: #3b82f6;
+            background: rgba(59,130,246,0.1);
+        }
+
+        .substitutions-item .class-info {
+            font-weight: 600;
+        }
+
+        .substitutions-item .details {
+            opacity: 0.7;
+            font-size: 0.75rem;
+            margin-top: 4px;
+        }
+
+        .substitutions-empty {
+            opacity: 0.3;
+            font-size: 0.85rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
         .loading {
             flex: 1;
             display: flex;
@@ -353,6 +432,15 @@
                         <div class="bus-empty">Loading...</div>
                     </div>
                 </div>
+
+                <div class="substitutions-panel" id="substitutionsPanel" style="display: none;">
+                    <div class="substitutions-header" data-i18n="substitutions">Substitutions</div>
+                    <div class="substitutions-scroll-container">
+                        <div class="substitutions-list" id="substitutionsList">
+                            <div class="substitutions-empty" data-i18n="noSubstitutions">No changes today</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -363,6 +451,13 @@
         const SCROLL_DURATION = 800;
         const REFRESH_TIME = 15 * 60 * 1000;
         const BUS_REFRESH = 60 * 1000;
+
+        // Substitutions config (loaded from settings)
+        let SUBSTITUTIONS_CONFIG = {
+            enabled: true,
+            refresh_minutes: 15,
+            display_windows: [{ start: '07:00', end: '10:00' }]
+        };
 
         // School schedule - loaded from settings API
         let SCHEDULE = [
@@ -443,6 +538,11 @@
                 } else {
                     busPanel.style.display = '';
                 }
+
+                // Load substitutions config
+                if (settings.substitutions) {
+                    SUBSTITUTIONS_CONFIG = settings.substitutions;
+                }
             } catch (e) {
                 console.error('Failed to load settings');
             }
@@ -455,6 +555,10 @@
 
             const clockStatus = document.getElementById('clockStatus');
             if (clockStatus) clockStatus.textContent = I18N.t('loadingSchedule');
+
+            // Translate substitutions header
+            const subsHeader = document.querySelector('.substitutions-header');
+            if (subsHeader) subsHeader.textContent = I18N.t('substitutions');
         }
 
         loadSettings();
@@ -470,6 +574,107 @@
         let currentStep = 0;
         let totalSteps = 0;
         let itemHeight = 0;
+
+        // === SUBSTITUTIONS ===
+        async function fetchSubstitutions() {
+            if (!SUBSTITUTIONS_CONFIG.enabled) return;
+
+            try {
+                const res = await fetch('/api/substitutions');
+                const subs = await res.json();
+                renderSubstitutions(subs);
+            } catch (e) {
+                console.error('Substitutions error:', e);
+            }
+        }
+
+        function renderSubstitutions(subs) {
+            const list = document.getElementById('substitutionsList');
+
+            if (!subs || !subs.length) {
+                list.innerHTML = `<div class="substitutions-empty">${I18N.t('noSubstitutions')}</div>`;
+                return;
+            }
+
+            list.innerHTML = subs.map(s => `
+                <div class="substitutions-item ${s.type}">
+                    <div class="class-info">${s.period}. ${s.class || ''}: ${s.subject}</div>
+                    <div class="details">${s.status}${s.room ? ' \u2022 ' + s.room : ''}</div>
+                </div>
+            `).join('');
+        }
+
+        function updateSubstitutionsVisibility() {
+            const panel = document.getElementById('substitutionsPanel');
+            if (!SUBSTITUTIONS_CONFIG.enabled) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            const now = getDemoTime();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+            const day = now.getDay();
+
+            // Hide on weekends
+            if (day === 0 || day === 6) {
+                panel.style.display = 'none';
+                return;
+            }
+
+            // Check if within any display window
+            const windows = SUBSTITUTIONS_CONFIG.display_windows || [];
+            const shouldShow = windows.some(w => {
+                const [startH, startM] = w.start.split(':').map(Number);
+                const [endH, endM] = w.end.split(':').map(Number);
+                const start = startH * 60 + startM;
+                const end = endH * 60 + endM;
+                return currentMin >= start && currentMin <= end;
+            });
+
+            panel.style.display = shouldShow ? 'flex' : 'none';
+            panel.style.flexDirection = 'column';
+        }
+
+        // Auto-scroll substitutions
+        let subsScrollPos = 0;
+        let subsScrollDir = 1;
+        const SUBS_SCROLL_PAUSE = 3000;
+        const SUBS_SCROLL_SPEED = 800;
+
+        function autoScrollSubstitutions() {
+            const list = document.getElementById('substitutionsList');
+            const container = document.querySelector('.substitutions-scroll-container');
+            const panel = document.getElementById('substitutionsPanel');
+            if (!list || !container || !panel || panel.style.display === 'none') return;
+
+            const listHeight = list.scrollHeight;
+            const containerHeight = container.clientHeight;
+
+            // Only scroll if content overflows
+            if (listHeight <= containerHeight) {
+                list.style.transform = 'translateY(0)';
+                return;
+            }
+
+            const maxScroll = listHeight - containerHeight;
+
+            // Move in current direction
+            if (subsScrollDir === 1) {
+                subsScrollPos += containerHeight * 0.8;
+                if (subsScrollPos >= maxScroll) {
+                    subsScrollPos = maxScroll;
+                    subsScrollDir = -1;
+                }
+            } else {
+                subsScrollPos -= containerHeight * 0.8;
+                if (subsScrollPos <= 0) {
+                    subsScrollPos = 0;
+                    subsScrollDir = 1;
+                }
+            }
+
+            list.style.transform = `translateY(-${subsScrollPos}px)`;
+        }
 
         // Mission clock
         function getNextSchoolDay(from) {
@@ -808,8 +1013,13 @@
 
         fetchArticles();
         fetchBus();
+        fetchSubstitutions();
         setInterval(fetchArticles, REFRESH_TIME);
         setInterval(fetchBus, BUS_REFRESH);
+        setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);
+        setInterval(updateSubstitutionsVisibility, 1000);
+        setInterval(autoScrollSubstitutions, SUBS_SCROLL_PAUSE);
+        updateSubstitutionsVisibility();
     </script>
 </body>
 </html>
