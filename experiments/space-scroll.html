@@ -509,22 +509,24 @@
         }
 
         function startDemoTime() {
-            // Start at 07:55
+            // Start at 05:55 to see sleep->wake transition
             demoTime = new Date();
-            demoTime.setHours(7, 55, 0, 0);
+            demoTime.setHours(5, 55, 0, 0);
             // Make it a weekday (Monday)
             while (demoTime.getDay() === 0 || demoTime.getDay() === 6) {
                 demoTime.setDate(demoTime.getDate() + 1);
             }
+            const demoDate = demoTime.getDate();
 
             // Smooth updates at 20fps, DEMO_SPEED = how many seconds pass per real second
             const FPS = 20;
             const msPerTick = 1000 / FPS;
             setInterval(() => {
                 demoTime.setTime(demoTime.getTime() + DEMO_SPEED * msPerTick);
-                // Reset at end of day
-                if (demoTime.getHours() >= 16) {
-                    demoTime.setHours(7, 55, 0, 0);
+                // Reset at midnight (when date changes)
+                if (demoTime.getDate() !== demoDate) {
+                    demoTime.setDate(demoDate);
+                    demoTime.setHours(0, 0, 0, 0);
                 }
             }, msPerTick);
         }
