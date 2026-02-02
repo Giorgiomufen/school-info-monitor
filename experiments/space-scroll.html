@@ -101,8 +101,8 @@
         }
 
         .top-timeline-labels {
-            display: flex;
-            justify-content: space-between;
+            position: relative;
+            height: 20px;
             margin-top: 12px;
             font-size: 0.75rem;
             opacity: 0.5;
@@ -111,12 +111,15 @@
 
         .top-timeline-now {
             position: absolute;
-            top: -35px;
-            transform: translateX(-50%);
+            top: -24px;
+            left: -50px;
+            right: -50px;
+            text-align: center;
             font-size: 0.7rem;
             letter-spacing: 2px;
             text-transform: uppercase;
             opacity: 0.7;
+            white-space: nowrap;
         }
 
         .main-content {
@@ -639,10 +642,17 @@
 
             container.innerHTML = html;
 
-            // Generate labels for each period
-            labels.innerHTML = SCHEDULE.map((p, i) =>
-                `<span>${p.start}</span>`
-            ).join('') + '<span>15:45</span>';
+            // Generate labels positioned by actual time
+            let labelsHtml = '';
+            SCHEDULE.forEach((p, i) => {
+                const [h, m] = p.start.split(':').map(Number);
+                const startMin = h * 60 + m;
+                const percent = ((startMin - DAY_START) / DAY_DURATION) * 100;
+                labelsHtml += `<span style="position:absolute;left:${percent}%;transform:translateX(-50%)">${p.start}</span>`;
+            });
+            // End time label at 100%
+            labelsHtml += `<span style="position:absolute;left:100%;transform:translateX(-50%)">15:45</span>`;
+            labels.innerHTML = labelsHtml;
         }
 
         function updateTopTimeline() {
