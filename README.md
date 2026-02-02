@@ -53,7 +53,7 @@ Access via http://localhost:8000/settings or press `S`
 - Language (English / Eesti)
 - Demo mode toggle + speed
 - Display hours (auto sleep)
-- Bus panel on/off with display windows and urgency thresholds
+- Bus panel on/off with display windows, urgency thresholds, and refresh rate
 - Substitutions panel with filter modes
 - News URL
 - Colors for each state
