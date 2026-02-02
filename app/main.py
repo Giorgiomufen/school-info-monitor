@@ -41,6 +41,11 @@ DEFAULT_SETTINGS = {
     "language": "en",
     "demo_mode": False,
     "demo_speed": 60,
+    "display_hours": {
+        "enabled": True,
+        "start": "06:00",
+        "end": "17:00"
+    },
     "bus_enabled": True,
     "bus_stop_id": "02601-1",
     "bus_stop_name": "Lepistiku",

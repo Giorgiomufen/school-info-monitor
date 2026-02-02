@@ -390,10 +390,23 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
+
+        .sleep-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+        }
+
+        .sleep-screen.active {
+            display: block;
+        }
     </style>
 </head>
 <body>
     <div class="space-bg"></div>
+    <div class="sleep-screen" id="sleepScreen"></div>
 
     <div class="container">
         <header>
@@ -451,6 +464,13 @@
         const SCROLL_DURATION = 800;
         const REFRESH_TIME = 15 * 60 * 1000;
         const BUS_REFRESH = 60 * 1000;
+
+        // Display hours config
+        let DISPLAY_HOURS = {
+            enabled: true,
+            start: '06:00',
+            end: '17:00'
+        };
 
         // Substitutions config (loaded from settings)
         let SUBSTITUTIONS_CONFIG = {
@@ -548,6 +568,11 @@
                 // Load substitutions config
                 if (settings.substitutions) {
                     SUBSTITUTIONS_CONFIG = settings.substitutions;
+                }
+
+                // Load display hours
+                if (settings.display_hours) {
+                    DISPLAY_HOURS = settings.display_hours;
                 }
             } catch (e) {
                 console.error('Failed to load settings');
@@ -1059,6 +1084,24 @@
             }, PAUSE_TIME);
         }
 
+        // Display hours - sleep screen when outside hours
+        function updateSleepScreen() {
+            if (!DISPLAY_HOURS.enabled) {
+                document.getElementById('sleepScreen').classList.remove('active');
+                return;
+            }
+
+            const now = getDemoTime();
+            const currentMin = now.getHours() * 60 + now.getMinutes();
+            const [startH, startM] = DISPLAY_HOURS.start.split(':').map(Number);
+            const [endH, endM] = DISPLAY_HOURS.end.split(':').map(Number);
+            const startMin = startH * 60 + startM;
+            const endMin = endH * 60 + endM;
+
+            const isAwake = currentMin >= startMin && currentMin < endMin;
+            document.getElementById('sleepScreen').classList.toggle('active', !isAwake);
+        }
+
         fetchArticles();
         fetchBus();
         fetchSubstitutions();
@@ -1067,9 +1110,10 @@
         setInterval(fetchSubstitutions, (SUBSTITUTIONS_CONFIG.refresh_minutes || 15) * 60 * 1000);
         setInterval(updateSubstitutionsVisibility, 1000);
         setInterval(autoScrollSubstitutions, SUBS_SCROLL_PAUSE);
-        // Re-render substitutions every minute to update time-based filtering
         setInterval(() => renderSubstitutions(rawSubstitutions), 60 * 1000);
+        setInterval(updateSleepScreen, 1000);
         updateSubstitutionsVisibility();
+        updateSleepScreen();
     </script>
 </body>
 </html>

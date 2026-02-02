@@ -25,6 +25,7 @@ A display screen for Tallinna Tehnikagümnaasium inspired by SpaceX design. Show
 - Demo mode with adjustable speed for testing
 - Color-coded states (lesson/break/before/after school)
 - i18n support (English, Estonian)
+- Display hours (auto sleep outside 06:00-17:00)
 
 ## Tech
 
@@ -87,5 +88,4 @@ If I come back with clarity, maybe continue. If not, that's okay too.
 - Student achievements / spotlights
 - Sports games schedule
 - Club meeting reminders
-- Display time windows for entire screen (auto on/off)
 - Bus panel display time windows 
