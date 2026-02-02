@@ -483,7 +483,7 @@
         const PAUSE_TIME = 12000;
         const SCROLL_DURATION = 800;
         const REFRESH_TIME = 15 * 60 * 1000;
-        let BUS_REFRESH = 20 * 1000;  // Loaded from settings
+        let BUS_REFRESH = 10 * 1000;  // Loaded from settings
 
         // Display hours config
         let DISPLAY_HOURS = {
@@ -503,8 +503,8 @@
         // Bus config
         let BUS_ENABLED = true;
         let BUS_DISPLAY_WINDOWS = [{ start: '07:00', end: '16:00' }];
-        let BUS_URGENT_MINS = 3;   // Yellow when <= this
-        let BUS_CRITICAL_MINS = 2; // Red when <= this
+        let BUS_URGENT_MINS = 4;   // Yellow when <= this
+        let BUS_CRITICAL_MINS = 0; // Red when <= this (0 = disabled)
 
         // School schedule - loaded from settings API
         let SCHEDULE = [

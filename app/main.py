@@ -38,9 +38,9 @@ DEFAULT_SETTINGS = {
     "bus_display_windows": [
         {"start": "00:00", "end": "23:59"}
     ],
-    "bus_urgent_mins": 3,    # Yellow when <= this (hurry)
-    "bus_critical_mins": 2,  # Red when <= this (run!)
-    "bus_refresh_seconds": 20,  # How often to fetch bus arrivals
+    "bus_urgent_mins": 4,    # Yellow when <= this (hurry)
+    "bus_critical_mins": 0,  # Red when <= this (0 = disabled)
+    "bus_refresh_seconds": 10,  # How often to fetch bus arrivals
     "news_url": "https://www.tallinn.ee/et/group/580/news?news_heading=20315",
     "colors": {
         "lesson": "#ff0000",
