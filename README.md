@@ -4,7 +4,7 @@ SpaceX-inspired info display for Tallinna Tehnikagümnaasium.
 
 ## Features
 
-- **News feed** - school news with images, descriptions, dates
+- **News feed** - scraped from school website (ttg.edu.ee)
 - **Bus arrivals** - real-time from Tallinn transport API with destinations
 - **Mission clock** - countdown to next lesson/break
 - **Timeline** - school day progress (08:00-15:45)
@@ -72,6 +72,12 @@ To add a new language (e.g., Russian):
 1. In `app/static/i18n.js`, add to `languages`: `ru: { name: 'Russian', nativeName: 'Русский' }`
 2. Add a `ru: { ... }` translations object with all keys
 3. Add `<option value="ru">Русский</option>` to the language selector in `settings.html`
+
+## Roadmap
+
+- [ ] **Social media feed** - Instagram and Facebook integration to replace/supplement news scraping with more engaging, real-time content
+- [ ] **Event countdowns** - days until holidays, exams, school events
+- [ ] **Schedule changes** - room changes and cancellations (requires school system access)
 
 ---
 
